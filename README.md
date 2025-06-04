@@ -1,73 +1,61 @@
-# Welcome to your Lovable project
+# Atelier Rose Commerce Kenya
 
-## Project info
+Welcome to the next chapter of Kenyan e-commerce!  
+Atelier Rose Commerce Kenya is your vibrant online marketplace, connecting shoppers with the best of Kenya’s creativity, craftsmanship, and culture—all in one seamless platform.
 
-**URL**: https://lovable.dev/projects/c470eb15-1e80-4dfc-a6d0-c3a6b81a690d
+---
 
-## How can I edit this code?
+## 🌺 What Makes Us Unique?
 
-There are several ways of editing your application.
+**Atelier Rose Commerce Kenya** isn’t just a store—it’s a movement to empower local artisans, entrepreneurs, and dreamers.  
+Whether you’re looking for handwoven baskets, bold fashion, specialty foods, or bespoke gifts, you’ll find authentic, high-quality products that celebrate Kenya’s diversity and talent.
 
-**Use Lovable**
+---
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/c470eb15-1e80-4dfc-a6d0-c3a6b81a690d) and start prompting.
+## 🚀 Features
 
-Changes made via Lovable will be committed automatically to this repo.
+- **Curated Marketplace:** Only the best, most interesting finds from across Kenya.
+- **Empowering Local:** Every purchase supports small businesses and independent creators.
+- **Smooth Shopping:** Modern design, fast loading, secure payments (including M-Pesa!), and easy navigation.
+- **For Sellers:** Dedicated dashboards, inventory tools, and direct access to your customers.
+- **For Shoppers:** Personalized recommendations, reviews, and responsive customer support.
 
-**Use your preferred IDE**
+---
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
+## 🛠️ Built With
 
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
+- **Vite** for lightning-fast development
+- **TypeScript** for robust code
+- **React** for a dynamic user experience
+- **shadcn-ui** + **Tailwind CSS** for beautiful, responsive design
 
-Follow these steps:
+---
+
+## 🏁 Getting Started
+
+Want to contribute or run your own version? It’s easy!
 
 ```sh
-# Step 1: Clone the repository using the project's Git URL.
 git clone <YOUR_GIT_URL>
-
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
-
-# Step 3: Install the necessary dependencies.
-npm i
-
-# Step 4: Start the development server with auto-reloading and an instant preview.
+cd atelier-rose-commerce-kenya
+npm install
 npm run dev
 ```
 
-**Edit a file directly in GitHub**
+---
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+## 🤝 Contributing
 
-**Use GitHub Codespaces**
+We love new ideas!  
+Open an issue or pull request to help improve the platform, suggest features, or report bugs.
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+---
 
-## What technologies are used for this project?
+## 📄 License
 
-This project is built with:
+MIT
 
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
+---
 
-## How can I deploy this project?
-
-Simply open [Lovable](https://lovable.dev/projects/c470eb15-1e80-4dfc-a6d0-c3a6b81a690d) and click on Share -> Publish.
-
-## Can I connect a custom domain to my Lovable project?
-
-Yes, you can!
-
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
-
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/tips-tricks/custom-domain#step-by-step-guide)
+Ready to discover something amazing?  
+Dive in at **Atelier Rose Commerce Kenya** and experience a marketplace as lively and welcoming as Kenya itself.
