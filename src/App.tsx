@@ -7,6 +7,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { CartProvider } from "@/contexts/CartContext";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
+import WhatsAppFloat from "@/components/WhatsAppFloat";
 import Index from "./pages/Index";
 import Shop from "./pages/Shop";
 import ProductDetail from "./pages/ProductDetail";
@@ -46,6 +47,7 @@ const App = () => (
               </Routes>
             </main>
             <Footer />
+            <WhatsAppFloat />
           </div>
         </BrowserRouter>
       </CartProvider>

@@ -4,11 +4,16 @@ import { Package, Eye, Search, Filter } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { supabase } from '@/integrations/supabase/client';
-import { DatabaseOrder, DatabaseOrderItem } from '@/types/database';
+import { DatabaseOrder, DatabaseOrderItem, DatabaseProfile } from '@/types/database';
 import { toast } from '@/hooks/use-toast';
 
+interface OrderWithItems extends DatabaseOrder {
+  order_items: DatabaseOrderItem[];
+  profiles?: DatabaseProfile;
+}
+
 const AdminOrders = () => {
-  const [orders, setOrders] = useState<(DatabaseOrder & { order_items: DatabaseOrderItem[]; profile: any })[]>([]);
+  const [orders, setOrders] = useState<OrderWithItems[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
@@ -27,7 +32,7 @@ const AdminOrders = () => {
             *,
             product:products (*)
           ),
-          profile:profiles (*)
+          profiles!orders_user_id_fkey (*)
         `)
         .order('created_at', { ascending: false });
 
@@ -45,7 +50,7 @@ const AdminOrders = () => {
     }
   };
 
-  const updateOrderStatus = async (orderId: string, status: string) => {
+  const updateOrderStatus = async (orderId: string, status: DatabaseOrder['status']) => {
     try {
       const { error } = await supabase
         .from('orders')
@@ -85,8 +90,8 @@ const AdminOrders = () => {
 
   const filteredOrders = orders.filter(order => {
     const matchesSearch = order.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         order.profile?.full_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         order.profile?.email?.toLowerCase().includes(searchTerm.toLowerCase());
+                         order.profiles?.full_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         order.profiles?.email?.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesStatus = statusFilter === 'all' || order.status === statusFilter;
     return matchesSearch && matchesStatus;
   });
@@ -138,7 +143,10 @@ const AdminOrders = () => {
                     Order #{order.id.slice(0, 8)}
                   </h3>
                   <p className="text-sm text-gray-600">
-                    {order.profile?.full_name || order.profile?.email}
+                    {order.profiles?.full_name || order.profiles?.email}
+                  </p>
+                  <p className="text-xs text-gray-500">
+                    Phone: {order.profiles?.phone || 'Not provided'}
                   </p>
                   <p className="text-xs text-gray-500">
                     {new Date(order.created_at).toLocaleString()}
@@ -150,7 +158,7 @@ const AdminOrders = () => {
                   </p>
                   <select
                     value={order.status}
-                    onChange={(e) => updateOrderStatus(order.id, e.target.value)}
+                    onChange={(e) => updateOrderStatus(order.id, e.target.value as DatabaseOrder['status'])}
                     className={`px-3 py-1 rounded-full text-sm font-medium border-0 ${getStatusColor(order.status)}`}
                   >
                     <option value="pending">Pending</option>
@@ -185,21 +193,35 @@ const AdminOrders = () => {
                 </div>
               </div>
 
-              <div className="border-t pt-4 mt-4 flex items-center justify-between">
-                <div className="text-sm text-gray-600">
-                  <p>Payment: {order.payment_method.toUpperCase()}</p>
-                  <p className={`inline-block px-2 py-1 rounded-full text-xs mt-1 ${
-                    order.payment_status === 'completed' 
-                      ? 'bg-green-100 text-green-800' 
-                      : 'bg-yellow-100 text-yellow-800'
-                  }`}>
-                    Payment {order.payment_status}
-                  </p>
+              <div className="border-t pt-4 mt-4">
+                <div className="mb-3">
+                  <h4 className="font-medium text-gray-800 mb-2">Shipping Address</h4>
+                  <div className="text-sm text-gray-600 bg-gray-50 p-3 rounded-lg">
+                    <p><strong>Name:</strong> {order.shipping_address?.name}</p>
+                    <p><strong>Phone:</strong> {order.shipping_address?.phone}</p>
+                    <p><strong>Street:</strong> {order.shipping_address?.street}</p>
+                    <p><strong>City:</strong> {order.shipping_address?.city}</p>
+                    {order.shipping_address?.county && <p><strong>County:</strong> {order.shipping_address.county}</p>}
+                    {order.shipping_address?.postalCode && <p><strong>Postal Code:</strong> {order.shipping_address.postalCode}</p>}
+                  </div>
                 </div>
-                <Button variant="outline" size="sm">
-                  <Eye className="h-4 w-4 mr-1" />
-                  View Details
-                </Button>
+                
+                <div className="flex items-center justify-between">
+                  <div className="text-sm text-gray-600">
+                    <p>Payment: {order.payment_method.toUpperCase()}</p>
+                    <p className={`inline-block px-2 py-1 rounded-full text-xs mt-1 ${
+                      order.payment_status === 'completed' 
+                        ? 'bg-green-100 text-green-800' 
+                        : 'bg-yellow-100 text-yellow-800'
+                    }`}>
+                      Payment {order.payment_status}
+                    </p>
+                  </div>
+                  <Button variant="outline" size="sm">
+                    <Eye className="h-4 w-4 mr-1" />
+                    View Details
+                  </Button>
+                </div>
               </div>
             </div>
           </div>

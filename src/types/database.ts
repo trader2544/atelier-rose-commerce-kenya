@@ -56,6 +56,7 @@ export interface DatabaseMessage {
   is_from_admin: boolean;
   is_read: boolean;
   created_at: string;
+  profile?: DatabaseProfile;
 }
 
 export interface UserRole {

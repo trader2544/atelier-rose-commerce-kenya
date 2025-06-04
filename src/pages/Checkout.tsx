@@ -1,15 +1,20 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useCart } from '@/contexts/CartContext';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { toast } from '@/hooks/use-toast';
+import { useAuth } from '@/hooks/useAuth';
+import { supabase } from '@/integrations/supabase/client';
+import AuthModal from '@/components/AuthModal';
 import { Address } from '@/types';
 
 const Checkout = () => {
   const { state, dispatch } = useCart();
+  const { user, profile } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
+  const [showAuthModal, setShowAuthModal] = useState(false);
   const [address, setAddress] = useState<Address>({
     name: '',
     phone: '',
@@ -19,8 +24,29 @@ const Checkout = () => {
     postalCode: ''
   });
 
+  useEffect(() => {
+    if (profile) {
+      setAddress(prev => ({
+        ...prev,
+        name: profile.full_name || '',
+        phone: profile.phone || ''
+      }));
+    }
+  }, [profile]);
+
   const subtotal = state.total;
-  const shipping = subtotal >= 10000 ? 0 : 500;
+  const getShippingCost = () => {
+    if (subtotal >= 10000) return 0; // Free delivery for orders over 10k
+    if (address.city?.toLowerCase() === 'kisumu' || address.city?.toLowerCase().includes('kisumu cbd')) {
+      return 0; // Free delivery within Kisumu CBD
+    }
+    if (address.city?.toLowerCase().includes('kisumu')) {
+      return 100; // Ksh 100 for orders outside Kisumu CBD
+    }
+    return 375; // Average of 300-450 for outside Kisumu town
+  };
+  
+  const shipping = getShippingCost();
   const total = subtotal + shipping;
 
   const handleAddressChange = (field: keyof Address, value: string) => {
@@ -28,6 +54,11 @@ const Checkout = () => {
   };
 
   const handleMpesaPayment = async () => {
+    if (!user) {
+      setShowAuthModal(true);
+      return;
+    }
+
     if (!address.name || !address.phone || !address.street || !address.city) {
       toast({
         title: "Incomplete Information",
@@ -39,25 +70,64 @@ const Checkout = () => {
 
     setIsLoading(true);
 
-    // Simulate M-Pesa payment process
-    setTimeout(() => {
-      toast({
-        title: "Order Placed Successfully!",
-        description: "Your order has been placed and you will receive a confirmation shortly. Please check your phone for M-Pesa payment confirmation.",
-      });
-      
-      // Clear cart after successful order
-      dispatch({ type: 'CLEAR_CART' });
-      setIsLoading(false);
-      
-      // In a real app, redirect to order confirmation page
-    }, 3000);
+    try {
+      // Create order in database
+      const { data: order, error: orderError } = await supabase
+        .from('orders')
+        .insert({
+          user_id: user.id,
+          total: total,
+          status: 'pending',
+          shipping_address: address,
+          payment_method: 'mpesa',
+          payment_status: 'pending'
+        })
+        .select()
+        .single();
 
-    // Show M-Pesa prompt
-    toast({
-      title: "M-Pesa Payment Initiated",
-      description: `Please check your phone ${address.phone} for M-Pesa payment prompt to pay KSh ${total.toLocaleString()}.`,
-    });
+      if (orderError) throw orderError;
+
+      // Create order items
+      const orderItems = state.items.map(item => ({
+        order_id: order.id,
+        product_id: item.product.id,
+        quantity: item.quantity,
+        price: item.product.price
+      }));
+
+      const { error: itemsError } = await supabase
+        .from('order_items')
+        .insert(orderItems);
+
+      if (itemsError) throw itemsError;
+
+      // Show M-Pesa prompt
+      toast({
+        title: "M-Pesa Payment Initiated",
+        description: `Please check your phone ${address.phone} for M-Pesa payment prompt to pay KSh ${total.toLocaleString()}.`,
+      });
+
+      // Simulate M-Pesa payment process
+      setTimeout(() => {
+        toast({
+          title: "Order Placed Successfully!",
+          description: "Your order has been placed and you will receive a confirmation shortly. Please check your phone for M-Pesa payment confirmation.",
+        });
+        
+        // Clear cart after successful order
+        dispatch({ type: 'CLEAR_CART' });
+        setIsLoading(false);
+      }, 3000);
+
+    } catch (error: any) {
+      console.error('Error placing order:', error);
+      toast({
+        title: "Error",
+        description: "Failed to place order. Please try again.",
+        variant: "destructive",
+      });
+      setIsLoading(false);
+    }
   };
 
   if (state.items.length === 0) {
@@ -78,6 +148,18 @@ const Checkout = () => {
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
         <h1 className="text-3xl font-light text-gray-800 mb-8">Checkout</h1>
 
+        {!user && (
+          <div className="luxury-card mb-6">
+            <div className="p-6 text-center">
+              <h2 className="text-xl font-medium text-gray-800 mb-4">Sign in to continue</h2>
+              <p className="text-gray-600 mb-6">Please sign in or create an account to place your order.</p>
+              <Button onClick={() => setShowAuthModal(true)} className="btn-primary">
+                Sign In / Sign Up
+              </Button>
+            </div>
+          </div>
+        )}
+
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           {/* Shipping Information */}
           <div className="luxury-card">
@@ -93,6 +175,7 @@ const Checkout = () => {
                     onChange={(e) => handleAddressChange('name', e.target.value)}
                     placeholder="Enter your full name"
                     className="border-rose-200 focus:border-rose-400"
+                    disabled={!user}
                   />
                 </div>
 
@@ -104,6 +187,7 @@ const Checkout = () => {
                     onChange={(e) => handleAddressChange('phone', e.target.value)}
                     placeholder="254712345678"
                     className="border-rose-200 focus:border-rose-400"
+                    disabled={!user}
                   />
                   <p className="text-xs text-gray-500 mt-1">
                     This will be used for M-Pesa payment and delivery updates
@@ -118,6 +202,7 @@ const Checkout = () => {
                     onChange={(e) => handleAddressChange('street', e.target.value)}
                     placeholder="Enter your street address"
                     className="border-rose-200 focus:border-rose-400"
+                    disabled={!user}
                   />
                 </div>
 
@@ -130,6 +215,7 @@ const Checkout = () => {
                       onChange={(e) => handleAddressChange('city', e.target.value)}
                       placeholder="City"
                       className="border-rose-200 focus:border-rose-400"
+                      disabled={!user}
                     />
                   </div>
 
@@ -141,6 +227,7 @@ const Checkout = () => {
                       onChange={(e) => handleAddressChange('county', e.target.value)}
                       placeholder="County"
                       className="border-rose-200 focus:border-rose-400"
+                      disabled={!user}
                     />
                   </div>
                 </div>
@@ -153,6 +240,7 @@ const Checkout = () => {
                     onChange={(e) => handleAddressChange('postalCode', e.target.value)}
                     placeholder="00100"
                     className="border-rose-200 focus:border-rose-400"
+                    disabled={!user}
                   />
                 </div>
               </div>
@@ -161,6 +249,18 @@ const Checkout = () => {
 
           {/* Order Summary */}
           <div className="space-y-6">
+            {/* Delivery Information */}
+            <div className="luxury-card">
+              <div className="p-6">
+                <h2 className="text-xl font-medium text-gray-800 mb-4">Delivery Information</h2>
+                <div className="space-y-2 text-sm text-gray-600">
+                  <p><strong>Free Delivery:</strong> Within Kisumu CBD and orders over KSh 10,000</p>
+                  <p><strong>KSh 100:</strong> Orders outside Kisumu CBD</p>
+                  <p><strong>KSh 300-450:</strong> Outside Kisumu town via Easy Coach Courier</p>
+                </div>
+              </div>
+            </div>
+
             {/* Order Items */}
             <div className="luxury-card">
               <div className="p-6">
@@ -219,27 +319,35 @@ const Checkout = () => {
                     <div>
                       <p className="font-medium text-gray-800">M-Pesa</p>
                       <p className="text-sm text-gray-600">Pay with M-Pesa mobile money</p>
+                      <p className="text-xs text-gray-500">Paybill: 880100, Account: 640011</p>
                     </div>
                   </div>
                 </div>
 
                 <Button
                   onClick={handleMpesaPayment}
-                  disabled={isLoading}
+                  disabled={isLoading || !user}
                   className="w-full btn-primary text-lg py-4"
                 >
                   {isLoading ? 'Processing Payment...' : `Pay KSh ${total.toLocaleString()} with M-Pesa`}
                 </Button>
 
                 <p className="text-xs text-gray-500 text-center mt-4">
-                  You will receive an M-Pesa prompt on your phone to complete the payment.
-                  Your order will be confirmed once payment is received.
+                  {user ? 
+                    "You will receive an M-Pesa prompt on your phone to complete the payment. Your order will be confirmed once payment is received." :
+                    "Please sign in to continue with your order."
+                  }
                 </p>
               </div>
             </div>
           </div>
         </div>
       </div>
+
+      <AuthModal
+        isOpen={showAuthModal}
+        onClose={() => setShowAuthModal(false)}
+      />
     </div>
   );
 };

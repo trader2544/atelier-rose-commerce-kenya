@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { X, User, Mail, Lock, Eye, EyeOff } from 'lucide-react';
+import { X, User, Mail, Lock, Eye, EyeOff, Phone } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -18,6 +18,7 @@ const AuthModal = ({ isOpen, onClose, initialMode = 'signin' }: AuthModalProps) 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [fullName, setFullName] = useState('');
+  const [phone, setPhone] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const { signIn, signUp } = useAuth();
@@ -39,7 +40,7 @@ const AuthModal = ({ isOpen, onClose, initialMode = 'signin' }: AuthModalProps) 
         });
         onClose();
       } else {
-        const { error } = await signUp(email, password, fullName);
+        const { error } = await signUp(email, password, fullName, phone);
         if (error) throw error;
         
         toast({
@@ -77,28 +78,48 @@ const AuthModal = ({ isOpen, onClose, initialMode = 'signin' }: AuthModalProps) 
 
           <form onSubmit={handleSubmit} className="space-y-4">
             {mode === 'signup' && (
-              <div>
-                <Label htmlFor="fullName" className="text-sm font-medium text-gray-700">
-                  Full Name
-                </Label>
-                <div className="relative">
-                  <User className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
-                  <Input
-                    id="fullName"
-                    type="text"
-                    value={fullName}
-                    onChange={(e) => setFullName(e.target.value)}
-                    className="pl-10 border-rose-200 focus:border-rose-400"
-                    placeholder="Enter your full name"
-                    required={mode === 'signup'}
-                  />
+              <>
+                <div>
+                  <Label htmlFor="fullName" className="text-sm font-medium text-gray-700">
+                    Full Name *
+                  </Label>
+                  <div className="relative">
+                    <User className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+                    <Input
+                      id="fullName"
+                      type="text"
+                      value={fullName}
+                      onChange={(e) => setFullName(e.target.value)}
+                      className="pl-10 border-rose-200 focus:border-rose-400"
+                      placeholder="Enter your full name"
+                      required={mode === 'signup'}
+                    />
+                  </div>
                 </div>
-              </div>
+
+                <div>
+                  <Label htmlFor="phone" className="text-sm font-medium text-gray-700">
+                    Phone Number *
+                  </Label>
+                  <div className="relative">
+                    <Phone className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+                    <Input
+                      id="phone"
+                      type="tel"
+                      value={phone}
+                      onChange={(e) => setPhone(e.target.value)}
+                      className="pl-10 border-rose-200 focus:border-rose-400"
+                      placeholder="254712345678"
+                      required={mode === 'signup'}
+                    />
+                  </div>
+                </div>
+              </>
             )}
 
             <div>
               <Label htmlFor="email" className="text-sm font-medium text-gray-700">
-                Email
+                Email *
               </Label>
               <div className="relative">
                 <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
@@ -116,7 +137,7 @@ const AuthModal = ({ isOpen, onClose, initialMode = 'signin' }: AuthModalProps) 
 
             <div>
               <Label htmlFor="password" className="text-sm font-medium text-gray-700">
-                Password
+                Password *
               </Label>
               <div className="relative">
                 <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />

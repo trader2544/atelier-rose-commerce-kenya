@@ -63,7 +63,20 @@ export default {
 					border: 'hsl(var(--sidebar-border))',
 					ring: 'hsl(var(--sidebar-ring))'
 				},
-				rose: {
+				blue: {
+					50: '#eff6ff',
+					100: '#dbeafe',
+					200: '#bfdbfe',
+					300: '#93c5fd',
+					400: '#60a5fa',
+					500: '#3b82f6',
+					600: '#2563eb',
+					700: '#1d4ed8',
+					800: '#1e40af',
+					900: '#1e3a8a',
+					950: '#172554'
+				},
+				pink: {
 					50: '#fdf2f8',
 					100: '#fce7f3',
 					200: '#fbcfe8',
@@ -74,18 +87,6 @@ export default {
 					700: '#be185d',
 					800: '#9d174d',
 					900: '#831843'
-				},
-				gold: {
-					50: '#fefdf8',
-					100: '#fefbeb',
-					200: '#fef3c7',
-					300: '#fde68a',
-					400: '#fbbf24',
-					500: '#f59e0b',
-					600: '#d97706',
-					700: '#b45309',
-					800: '#92400e',
-					900: '#78350f'
 				}
 			},
 			borderRadius: {
@@ -138,7 +139,7 @@ export default {
 			backgroundImage: {
 				'gradient-radial': 'radial-gradient(var(--tw-gradient-stops))',
 				'gradient-conic': 'conic-gradient(from 180deg at 50% 50%, var(--tw-gradient-stops))',
-				'luxury-gradient': 'linear-gradient(135deg, #fdf2f8 0%, #fce7f3 25%, #fbcfe8 50%, #f9a8d4 75%, #fef3c7 100%)'
+				'luxury-gradient': 'linear-gradient(135deg, #f8fafc 0%, #e2e8f0 25%, #cbd5e1 50%, #f472b6 75%, #fef3c7 100%)'
 			}
 		}
 	},

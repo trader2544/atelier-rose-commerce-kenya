@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
-import { Plus, Edit, Trash2, Search } from 'lucide-react';
+import { Plus, Search, Edit, Trash2, Package } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { supabase } from '@/integrations/supabase/client';
@@ -11,9 +11,9 @@ import ProductForm from './ProductForm';
 const AdminProducts = () => {
   const [products, setProducts] = useState<DatabaseProduct[]>([]);
   const [loading, setLoading] = useState(true);
-  const [searchTerm, setSearchTerm] = useState('');
   const [showForm, setShowForm] = useState(false);
   const [editingProduct, setEditingProduct] = useState<DatabaseProduct | null>(null);
+  const [searchTerm, setSearchTerm] = useState('');
 
   useEffect(() => {
     fetchProducts();
@@ -59,7 +59,7 @@ const AdminProducts = () => {
       setProducts(products.filter(p => p.id !== productId));
       toast({
         title: "Product deleted",
-        description: "The product has been successfully deleted.",
+        description: "Product has been deleted successfully.",
       });
     } catch (error) {
       console.error('Error deleting product:', error);
@@ -69,6 +69,12 @@ const AdminProducts = () => {
         variant: "destructive",
       });
     }
+  };
+
+  const handleFormClose = () => {
+    setShowForm(false);
+    setEditingProduct(null);
+    fetchProducts();
   };
 
   const filteredProducts = products.filter(product =>
@@ -84,26 +90,30 @@ const AdminProducts = () => {
     );
   }
 
+  if (showForm) {
+    return (
+      <ProductForm
+        product={editingProduct}
+        onClose={handleFormClose}
+      />
+    );
+  }
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <div className="flex items-center space-x-4">
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
-            <Input
-              type="text"
-              placeholder="Search products..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-10 w-64"
-            />
-          </div>
+        <div className="relative">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+          <Input
+            type="text"
+            placeholder="Search products..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="pl-10 w-64"
+          />
         </div>
         <Button
-          onClick={() => {
-            setEditingProduct(null);
-            setShowForm(true);
-          }}
+          onClick={() => setShowForm(true)}
           className="btn-primary flex items-center space-x-2"
         >
           <Plus className="h-4 w-4" />
@@ -114,20 +124,33 @@ const AdminProducts = () => {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {filteredProducts.map((product) => (
           <div key={product.id} className="luxury-card">
-            <div className="p-4">
+            <div className="aspect-square relative overflow-hidden rounded-t-2xl">
               <img
                 src={product.images[0] || '/placeholder.svg'}
                 alt={product.name}
-                className="w-full h-48 object-cover rounded-lg mb-4"
+                className="w-full h-full object-cover"
               />
+            </div>
+            <div className="p-4">
               <h3 className="font-medium text-gray-800 mb-2">{product.name}</h3>
-              <p className="text-sm text-gray-600 mb-2">{product.category}</p>
-              <div className="flex items-center justify-between mb-4">
-                <span className="text-lg font-semibold text-rose-600">
-                  KSh {product.price.toLocaleString()}
-                </span>
+              <p className="text-sm text-gray-600 mb-2 line-clamp-2">
+                {product.description}
+              </p>
+              <div className="flex items-center justify-between mb-3">
+                <div>
+                  <span className="text-lg font-semibold text-rose-600">
+                    KSh {product.price.toLocaleString()}
+                  </span>
+                  {product.original_price && (
+                    <span className="text-sm text-gray-400 line-through ml-2">
+                      KSh {product.original_price.toLocaleString()}
+                    </span>
+                  )}
+                </div>
                 <span className={`px-2 py-1 rounded-full text-xs ${
-                  product.in_stock ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+                  product.in_stock 
+                    ? 'bg-green-100 text-green-800' 
+                    : 'bg-red-100 text-red-800'
                 }`}>
                   {product.in_stock ? 'In Stock' : 'Out of Stock'}
                 </span>
@@ -161,24 +184,11 @@ const AdminProducts = () => {
           <Package className="h-12 w-12 text-gray-400 mx-auto mb-4" />
           <h3 className="text-lg font-medium text-gray-800 mb-2">No products found</h3>
           <p className="text-gray-600">
-            {searchTerm ? 'Try adjusting your search criteria.' : 'Start by adding your first product.'}
+            {searchTerm 
+              ? 'Try adjusting your search criteria.' 
+              : 'Start by adding your first product.'}
           </p>
         </div>
-      )}
-
-      {showForm && (
-        <ProductForm
-          product={editingProduct}
-          onClose={() => {
-            setShowForm(false);
-            setEditingProduct(null);
-          }}
-          onSave={() => {
-            fetchProducts();
-            setShowForm(false);
-            setEditingProduct(null);
-          }}
-        />
       )}
     </div>
   );
