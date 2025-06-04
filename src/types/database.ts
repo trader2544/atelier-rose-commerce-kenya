@@ -65,3 +65,13 @@ export interface UserRole {
   role: 'admin' | 'user';
   created_at: string;
 }
+
+// Extended types for admin components
+export interface OrderWithItems extends DatabaseOrder {
+  order_items: DatabaseOrderItem[];
+  profiles?: DatabaseProfile;
+}
+
+export interface MessageWithProfile extends DatabaseMessage {
+  profiles?: DatabaseProfile;
+}

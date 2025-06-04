@@ -5,44 +5,44 @@
 
 @layer base {
   :root {
-    --background: 248 250 252;
-    --foreground: 15 23 42;
+    --background: 252 249 253;
+    --foreground: 31 31 31;
 
     --card: 255 255 255;
-    --card-foreground: 15 23 42;
+    --card-foreground: 31 31 31;
 
     --popover: 255 255 255;
-    --popover-foreground: 15 23 42;
+    --popover-foreground: 31 31 31;
 
-    --primary: 30 58 138;
-    --primary-foreground: 248 250 252;
+    --primary: 219 39 119;
+    --primary-foreground: 255 255 255;
 
-    --secondary: 244 114 182;
-    --secondary-foreground: 15 23 42;
+    --secondary: 236 72 153;
+    --secondary-foreground: 255 255 255;
 
-    --muted: 241 245 249;
-    --muted-foreground: 100 116 139;
+    --muted: 249 245 253;
+    --muted-foreground: 107 114 128;
 
-    --accent: 244 114 182;
-    --accent-foreground: 15 23 42;
+    --accent: 236 72 153;
+    --accent-foreground: 255 255 255;
 
     --destructive: 239 68 68;
     --destructive-foreground: 255 255 255;
 
-    --border: 226 232 240;
-    --input: 226 232 240;
-    --ring: 30 58 138;
+    --border: 236 72 153;
+    --input: 229 231 235;
+    --ring: 219 39 119;
 
-    --radius: 0.75rem;
+    --radius: 1rem;
 
-    --sidebar-background: 248 250 252;
-    --sidebar-foreground: 15 23 42;
-    --sidebar-primary: 30 58 138;
-    --sidebar-primary-foreground: 248 250 252;
-    --sidebar-accent: 244 114 182;
-    --sidebar-accent-foreground: 15 23 42;
-    --sidebar-border: 226 232 240;
-    --sidebar-ring: 30 58 138;
+    --sidebar-background: 252 249 253;
+    --sidebar-foreground: 31 31 31;
+    --sidebar-primary: 219 39 119;
+    --sidebar-primary-foreground: 255 255 255;
+    --sidebar-accent: 236 72 153;
+    --sidebar-accent-foreground: 255 255 255;
+    --sidebar-border: 236 72 153;
+    --sidebar-ring: 219 39 119;
   }
 }
 
@@ -52,7 +52,7 @@
   }
 
   body {
-    @apply bg-background text-foreground font-light;
+    @apply bg-gradient-to-br from-pink-50 via-white to-purple-50 text-foreground font-light;
     font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
     position: relative;
     overflow-x: hidden;
@@ -65,8 +65,8 @@
     left: 0;
     width: 100%;
     height: 100%;
-    background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 1000"><g fill="rgba(244,114,182,0.05)"><circle cx="100" cy="100" r="3"><animate attributeName="opacity" values="0.3;0.7;0.3" dur="3s" repeatCount="indefinite"/></circle><circle cx="300" cy="200" r="2"><animate attributeName="opacity" values="0.2;0.6;0.2" dur="4s" repeatCount="indefinite"/></circle><circle cx="500" cy="150" r="2.5"><animate attributeName="opacity" values="0.4;0.8;0.4" dur="2.5s" repeatCount="indefinite"/></circle><circle cx="700" cy="300" r="2"><animate attributeName="opacity" values="0.3;0.7;0.3" dur="3.5s" repeatCount="indefinite"/></circle><circle cx="900" cy="250" r="3"><animate attributeName="opacity" values="0.2;0.6;0.2" dur="4.5s" repeatCount="indefinite"/></circle><circle cx="200" cy="400" r="2.5"><animate attributeName="opacity" values="0.4;0.8;0.4" dur="3s" repeatCount="indefinite"/></circle><circle cx="400" cy="500" r="2"><animate attributeName="opacity" values="0.3;0.7;0.3" dur="2.8s" repeatCount="indefinite"/></circle><circle cx="600" cy="450" r="3"><animate attributeName="opacity" values="0.2;0.6;0.2" dur="3.8s" repeatCount="indefinite"/></circle><circle cx="800" cy="550" r="2"><animate attributeName="opacity" values="0.4;0.8;0.4" dur="4.2s" repeatCount="indefinite"/></circle><circle cx="150" cy="700" r="2.5"><animate attributeName="opacity" values="0.3;0.7;0.3" dur="3.2s" repeatCount="indefinite"/></circle><circle cx="350" cy="800" r="2"><animate attributeName="opacity" values="0.2;0.6;0.2" dur="4.8s" repeatCount="indefinite"/></circle><circle cx="550" cy="750" r="3"><animate attributeName="opacity" values="0.4;0.8;0.4" dur="2.2s" repeatCount="indefinite"/></circle><circle cx="750" cy="850" r="2"><animate attributeName="opacity" values="0.3;0.7;0.3" dur="3.7s" repeatCount="indefinite"/></circle><circle cx="950" cy="800" r="2.5"><animate attributeName="opacity" values="0.2;0.6;0.2" dur="4.3s" repeatCount="indefinite"/></circle></g></svg>') repeat;
-    animation: float-hearts 20s linear infinite;
+    background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 1000"><g fill="rgba(236,72,153,0.08)"><circle cx="100" cy="100" r="2"><animate attributeName="opacity" values="0.2;0.5;0.2" dur="4s" repeatCount="indefinite"/></circle><circle cx="300" cy="200" r="1.5"><animate attributeName="opacity" values="0.1;0.4;0.1" dur="5s" repeatCount="indefinite"/></circle><circle cx="500" cy="150" r="2"><animate attributeName="opacity" values="0.3;0.6;0.3" dur="3s" repeatCount="indefinite"/></circle><circle cx="700" cy="300" r="1.5"><animate attributeName="opacity" values="0.2;0.5;0.2" dur="4.5s" repeatCount="indefinite"/></circle><circle cx="900" cy="250" r="2.5"><animate attributeName="opacity" values="0.1;0.4;0.1" dur="3.5s" repeatCount="indefinite"/></circle><circle cx="200" cy="400" r="2"><animate attributeName="opacity" values="0.3;0.6;0.3" dur="4s" repeatCount="indefinite"/></circle><circle cx="400" cy="500" r="1.5"><animate attributeName="opacity" values="0.2;0.5;0.2" dur="3.8s" repeatCount="indefinite"/></circle><circle cx="600" cy="450" r="2.5"><animate attributeName="opacity" values="0.1;0.4;0.1" dur="4.2s" repeatCount="indefinite"/></circle><circle cx="800" cy="550" r="1.5"><animate attributeName="opacity" values="0.3;0.6;0.3" dur="5.2s" repeatCount="indefinite"/></circle><circle cx="150" cy="700" r="2"><animate attributeName="opacity" values="0.2;0.5;0.2" dur="4.2s" repeatCount="indefinite"/></circle><circle cx="350" cy="800" r="1.5"><animate attributeName="opacity" values="0.1;0.4;0.1" dur="4.8s" repeatCount="indefinite"/></circle><circle cx="550" cy="750" r="2.5"><animate attributeName="opacity" values="0.3;0.6;0.3" dur="3.2s" repeatCount="indefinite"/></circle><circle cx="750" cy="850" r="1.5"><animate attributeName="opacity" values="0.2;0.5;0.2" dur="3.7s" repeatCount="indefinite"/></circle><circle cx="950" cy="800" r="2"><animate attributeName="opacity" values="0.1;0.4;0.1" dur="4.3s" repeatCount="indefinite"/></circle></g></svg>') repeat;
+    animation: float-hearts 25s linear infinite;
     pointer-events: none;
     z-index: -1;
   }
@@ -78,19 +78,19 @@
 
 @layer components {
   .luxury-card {
-    @apply bg-white/90 backdrop-blur-sm border border-slate-200 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-1;
+    @apply bg-white/95 backdrop-blur-sm border border-pink-200/50 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-1;
   }
   
   .btn-primary {
-    @apply bg-gradient-to-r from-blue-800 to-blue-900 text-white px-6 py-3 rounded-full font-medium tracking-wide hover:from-blue-900 hover:to-blue-950 transition-all duration-300 shadow-lg hover:shadow-xl;
+    @apply bg-gradient-to-r from-pink-600 to-pink-700 text-white px-8 py-3 rounded-full font-medium tracking-wide hover:from-pink-700 hover:to-pink-800 transition-all duration-300 shadow-lg hover:shadow-xl;
   }
   
   .btn-secondary {
-    @apply bg-white/90 text-blue-800 border border-blue-300 px-6 py-3 rounded-full font-medium tracking-wide hover:bg-blue-50 transition-all duration-300;
+    @apply bg-white/90 text-pink-700 border border-pink-300 px-8 py-3 rounded-full font-medium tracking-wide hover:bg-pink-50 transition-all duration-300;
   }
 
   .animated-bg {
-    background: linear-gradient(-45deg, #f8fafc, #e2e8f0, #cbd5e1, #f472b6, #fef3c7);
+    background: linear-gradient(-45deg, #fdf2f8, #fce7f3, #fbcfe8, #f9a8d4, #f472b6);
     background-size: 400% 400%;
     animation: gradient 15s ease infinite;
   }
@@ -115,6 +115,39 @@
   .whatsapp-float:hover {
     transform: scale(1.1);
     box-shadow: 0 6px 20px rgba(37, 211, 102, 0.4);
+  }
+
+  .girly-container {
+    @apply min-h-screen bg-gradient-to-br from-pink-50 via-white to-purple-50;
+  }
+
+  .page-header {
+    @apply text-3xl md:text-4xl font-light text-gray-800 mb-8 tracking-wide;
+  }
+
+  .page-subtitle {
+    @apply text-lg text-gray-600 mb-6 font-light;
+  }
+
+  .form-input {
+    @apply border-pink-200 focus:border-pink-400 focus:ring-pink-400 rounded-lg;
+  }
+
+  .product-card {
+    @apply luxury-card group overflow-hidden hover:scale-105 transition-all duration-300;
+  }
+
+  .sparkle-effect {
+    @apply relative;
+  }
+
+  .sparkle-effect::before {
+    content: '✨';
+    position: absolute;
+    top: -10px;
+    right: -10px;
+    animation: sparkle 2s ease-in-out infinite;
+    opacity: 0.7;
   }
 
   @keyframes gradient {
@@ -147,14 +180,8 @@
     }
   }
 
-  .sparkle::before {
-    content: '✨';
-    position: absolute;
-    animation: sparkle 2s ease-in-out infinite;
-  }
-
   @keyframes sparkle {
-    0%, 100% { opacity: 0; transform: scale(0.8); }
-    50% { opacity: 1; transform: scale(1.2); }
+    0%, 100% { opacity: 0; transform: scale(0.8) rotate(0deg); }
+    50% { opacity: 1; transform: scale(1.2) rotate(180deg); }
   }
 }

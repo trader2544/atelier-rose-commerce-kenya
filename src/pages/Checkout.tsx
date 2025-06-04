@@ -78,7 +78,7 @@ const Checkout = () => {
           user_id: user.id,
           total: total,
           status: 'pending',
-          shipping_address: address,
+          shipping_address: address as any,
           payment_method: 'mpesa',
           payment_status: 'pending'
         })
@@ -132,7 +132,7 @@ const Checkout = () => {
 
   if (state.items.length === 0) {
     return (
-      <div className="min-h-screen pt-20 pb-16">
+      <div className="min-h-screen bg-gradient-to-br from-pink-50 via-white to-purple-50 pt-20 pb-16">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center py-16">
             <h1 className="text-2xl font-medium text-gray-800 mb-4">Your cart is empty</h1>
@@ -144,7 +144,7 @@ const Checkout = () => {
   }
 
   return (
-    <div className="min-h-screen pt-20 pb-16">
+    <div className="min-h-screen bg-gradient-to-br from-pink-50 via-white to-purple-50 pt-20 pb-16">
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
         <h1 className="text-3xl font-light text-gray-800 mb-8">Checkout</h1>
 
@@ -153,7 +153,7 @@ const Checkout = () => {
             <div className="p-6 text-center">
               <h2 className="text-xl font-medium text-gray-800 mb-4">Sign in to continue</h2>
               <p className="text-gray-600 mb-6">Please sign in or create an account to place your order.</p>
-              <Button onClick={() => setShowAuthModal(true)} className="btn-primary">
+              <Button onClick={() => setShowAuthModal(true)} className="bg-pink-600 hover:bg-pink-700 text-white px-8 py-3 rounded-full">
                 Sign In / Sign Up
               </Button>
             </div>
@@ -174,7 +174,7 @@ const Checkout = () => {
                     value={address.name}
                     onChange={(e) => handleAddressChange('name', e.target.value)}
                     placeholder="Enter your full name"
-                    className="border-rose-200 focus:border-rose-400"
+                    className="border-pink-200 focus:border-pink-400"
                     disabled={!user}
                   />
                 </div>
@@ -186,7 +186,7 @@ const Checkout = () => {
                     value={address.phone}
                     onChange={(e) => handleAddressChange('phone', e.target.value)}
                     placeholder="254712345678"
-                    className="border-rose-200 focus:border-rose-400"
+                    className="border-pink-200 focus:border-pink-400"
                     disabled={!user}
                   />
                   <p className="text-xs text-gray-500 mt-1">
@@ -201,7 +201,7 @@ const Checkout = () => {
                     value={address.street}
                     onChange={(e) => handleAddressChange('street', e.target.value)}
                     placeholder="Enter your street address"
-                    className="border-rose-200 focus:border-rose-400"
+                    className="border-pink-200 focus:border-pink-400"
                     disabled={!user}
                   />
                 </div>
@@ -214,7 +214,7 @@ const Checkout = () => {
                       value={address.city}
                       onChange={(e) => handleAddressChange('city', e.target.value)}
                       placeholder="City"
-                      className="border-rose-200 focus:border-rose-400"
+                      className="border-pink-200 focus:border-pink-400"
                       disabled={!user}
                     />
                   </div>
@@ -226,7 +226,7 @@ const Checkout = () => {
                       value={address.county}
                       onChange={(e) => handleAddressChange('county', e.target.value)}
                       placeholder="County"
-                      className="border-rose-200 focus:border-rose-400"
+                      className="border-pink-200 focus:border-pink-400"
                       disabled={!user}
                     />
                   </div>
@@ -239,7 +239,7 @@ const Checkout = () => {
                     value={address.postalCode}
                     onChange={(e) => handleAddressChange('postalCode', e.target.value)}
                     placeholder="00100"
-                    className="border-rose-200 focus:border-rose-400"
+                    className="border-pink-200 focus:border-pink-400"
                     disabled={!user}
                   />
                 </div>
@@ -300,7 +300,7 @@ const Checkout = () => {
                   </div>
                   <div className="flex justify-between font-semibold text-lg border-t pt-2">
                     <span>Total</span>
-                    <span className="text-rose-600">KSh {total.toLocaleString()}</span>
+                    <span className="text-pink-600">KSh {total.toLocaleString()}</span>
                   </div>
                 </div>
               </div>
@@ -311,7 +311,7 @@ const Checkout = () => {
               <div className="p-6">
                 <h2 className="text-xl font-medium text-gray-800 mb-4">Payment Method</h2>
                 
-                <div className="border border-rose-200 rounded-lg p-4 mb-4">
+                <div className="border border-pink-200 rounded-lg p-4 mb-4">
                   <div className="flex items-center space-x-3">
                     <div className="w-10 h-10 bg-green-600 rounded-lg flex items-center justify-center">
                       <span className="text-white font-bold text-sm">M</span>
@@ -327,7 +327,7 @@ const Checkout = () => {
                 <Button
                   onClick={handleMpesaPayment}
                   disabled={isLoading || !user}
-                  className="w-full btn-primary text-lg py-4"
+                  className="w-full bg-pink-600 hover:bg-pink-700 text-white text-lg py-4 rounded-full"
                 >
                   {isLoading ? 'Processing Payment...' : `Pay KSh ${total.toLocaleString()} with M-Pesa`}
                 </Button>
