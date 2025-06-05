@@ -1,19 +1,29 @@
 
 import React, { useState, useEffect } from 'react';
-import { supabase } from '@/integrations/supabase/client';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Search, Eye, Package } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Package, Eye, Edit } from 'lucide-react';
-import { DatabaseOrder, DatabaseProfile } from '@/types/database';
+import { supabase } from '@/integrations/supabase/client';
+import { toast } from '@/hooks/use-toast';
 
-interface OrderWithProfile extends DatabaseOrder {
-  profiles?: DatabaseProfile;
+interface Order {
+  id: string;
+  user_id: string;
+  total: number;
+  status: string;
+  payment_status: string;
+  payment_method: string;
+  shipping_address: any;
+  created_at: string;
+  updated_at: string;
 }
 
 const AdminOrders = () => {
-  const [orders, setOrders] = useState<OrderWithProfile[]>([]);
+  const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
+  const [searchTerm, setSearchTerm] = useState('');
 
   useEffect(() => {
     fetchOrders();
@@ -23,58 +33,62 @@ const AdminOrders = () => {
     try {
       const { data, error } = await supabase
         .from('orders')
-        .select(`
-          *,
-          profiles (*)
-        `)
+        .select('*')
         .order('created_at', { ascending: false });
 
       if (error) throw error;
       setOrders(data || []);
     } catch (error) {
       console.error('Error fetching orders:', error);
+      toast({
+        title: "Error",
+        description: "Failed to fetch orders",
+        variant: "destructive",
+      });
     } finally {
       setLoading(false);
     }
   };
 
-  const updateOrderStatus = async (orderId: string, status: string) => {
+  const updateOrderStatus = async (orderId: string, newStatus: string) => {
     try {
       const { error } = await supabase
         .from('orders')
-        .update({ status })
+        .update({ status: newStatus })
         .eq('id', orderId);
 
       if (error) throw error;
+
+      toast({
+        title: "Success",
+        description: "Order status updated successfully",
+      });
+
       fetchOrders();
     } catch (error) {
-      console.error('Error updating order status:', error);
+      console.error('Error updating order:', error);
+      toast({
+        title: "Error",
+        description: "Failed to update order status",
+        variant: "destructive",
+      });
     }
   };
 
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'pending': return 'bg-yellow-100 text-yellow-800';
-      case 'processing': return 'bg-blue-100 text-blue-800';
-      case 'shipped': return 'bg-purple-100 text-purple-800';
-      case 'delivered': return 'bg-green-100 text-green-800';
-      case 'cancelled': return 'bg-red-100 text-red-800';
-      default: return 'bg-gray-100 text-gray-800';
-    }
-  };
+  const filteredOrders = orders.filter(order =>
+    order.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    order.status.toLowerCase().includes(searchTerm.toLowerCase())
+  );
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-pink-50/30 via-gray-50/30 to-purple-50/30 relative overflow-hidden">
-        <div className="love-shapes"></div>
-        <div className="relative z-10 p-4 sm:p-6">
-          <div className="animate-pulse">
-            <div className="h-8 bg-gray-200 rounded w-1/4 mb-6"></div>
-            <div className="space-y-4">
-              {[...Array(5)].map((_, i) => (
-                <div key={i} className="h-32 bg-gray-200 rounded-lg"></div>
-              ))}
-            </div>
+      <div className="p-6">
+        <div className="animate-pulse space-y-4">
+          <div className="h-8 bg-gray-200 rounded w-1/4"></div>
+          <div className="space-y-3">
+            {[...Array(5)].map((_, i) => (
+              <div key={i} className="h-32 bg-gray-200 rounded"></div>
+            ))}
           </div>
         </div>
       </div>
@@ -82,77 +96,90 @@ const AdminOrders = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-pink-50/30 via-gray-50/30 to-purple-50/30 relative overflow-hidden">
-      <div className="love-shapes"></div>
-      
-      <div className="relative z-10 p-4 sm:p-6">
-        <div className="flex justify-between items-center mb-6">
-          <h2 className="text-xl sm:text-2xl font-light text-gray-800">Orders</h2>
-          <Badge className="bg-pink-100 text-pink-800">
-            {orders.length} total
-          </Badge>
-        </div>
+    <div className="p-6">
+      <div className="flex justify-between items-center mb-6">
+        <h2 className="text-2xl font-light text-gray-800">Orders Management</h2>
+      </div>
 
-        <div className="grid grid-cols-1 gap-4 sm:gap-6">
-          {orders.map((order) => (
-            <Card key={order.id} className="glassmorphic">
-              <CardHeader className="pb-3">
-                <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-2">
-                  <div>
-                    <CardTitle className="text-base sm:text-lg text-gray-800 mb-1">
-                      Order #{order.id.slice(-8)}
-                    </CardTitle>
-                    <p className="text-xs sm:text-sm text-gray-600">
-                      Customer: {order.profiles?.full_name || order.profiles?.email || 'Unknown'}
-                    </p>
-                  </div>
-                  <div className="flex flex-col sm:items-end gap-2">
-                    <Badge className={getStatusColor(order.status)}>
-                      {order.status}
-                    </Badge>
-                    <span className="text-xs text-gray-500">
-                      {new Date(order.created_at).toLocaleDateString()}
-                    </span>
-                  </div>
-                </div>
-              </CardHeader>
-              <CardContent>
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-4">
-                  <div>
-                    <p className="text-xs text-gray-600">Total</p>
-                    <p className="font-semibold text-pink-600">KSh {order.total.toLocaleString()}</p>
-                  </div>
-                  <div>
-                    <p className="text-xs text-gray-600">Payment</p>
-                    <p className="text-sm">{order.payment_method}</p>
-                  </div>
-                  <div>
-                    <p className="text-xs text-gray-600">Payment Status</p>
-                    <Badge className={order.payment_status === 'completed' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'}>
-                      {order.payment_status}
-                    </Badge>
-                  </div>
-                </div>
-                
-                <div className="flex flex-wrap gap-2">
-                  <Button size="sm" variant="outline" className="text-xs">
-                    <Eye className="h-3 w-3 mr-1" />
-                    View Details
-                  </Button>
-                  <Button size="sm" variant="outline" className="text-xs">
-                    <Edit className="h-3 w-3 mr-1" />
-                    Update Status
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
+      <div className="mb-6">
+        <div className="relative">
+          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+          <Input
+            placeholder="Search orders..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="pl-10 bg-white/70 border-pink-200"
+          />
         </div>
+      </div>
 
-        {orders.length === 0 && (
+      <div className="space-y-4">
+        {filteredOrders.map((order) => (
+          <Card key={order.id} className="glassmorphic">
+            <CardHeader className="pb-3">
+              <div className="flex justify-between items-start">
+                <div>
+                  <CardTitle className="text-lg font-medium text-gray-800">
+                    Order #{order.id.slice(-8)}
+                  </CardTitle>
+                  <p className="text-sm text-gray-600 mt-1">
+                    {new Date(order.created_at).toLocaleDateString()}
+                  </p>
+                </div>
+                <div className="flex space-x-2">
+                  <Badge className="bg-green-100 text-green-800">
+                    KSh {order.total.toLocaleString()}
+                  </Badge>
+                  <Badge className={
+                    order.status === 'completed' ? 'bg-green-100 text-green-800' :
+                    order.status === 'pending' ? 'bg-yellow-100 text-yellow-800' :
+                    'bg-red-100 text-red-800'
+                  }>
+                    {order.status}
+                  </Badge>
+                </div>
+              </div>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-2 gap-4 text-sm">
+                <div>
+                  <span className="font-medium">Payment Status:</span>
+                  <span className={`ml-2 ${order.payment_status === 'paid' ? 'text-green-600' : 'text-yellow-600'}`}>
+                    {order.payment_status}
+                  </span>
+                </div>
+                <div>
+                  <span className="font-medium">Payment Method:</span>
+                  <span className="ml-2">{order.payment_method}</span>
+                </div>
+              </div>
+              
+              <div className="flex justify-end space-x-2 mt-4">
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => updateOrderStatus(order.id, 'processing')}
+                  disabled={order.status === 'processing'}
+                >
+                  <Package className="h-4 w-4 mr-1" />
+                  Process
+                </Button>
+                <Button
+                  size="sm"
+                  onClick={() => updateOrderStatus(order.id, 'completed')}
+                  disabled={order.status === 'completed'}
+                  className="bg-green-500 hover:bg-green-600 text-white"
+                >
+                  Complete
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        ))}
+
+        {filteredOrders.length === 0 && (
           <div className="text-center py-16">
-            <Package className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-            <p className="text-gray-600 text-base sm:text-lg">No orders yet.</p>
+            <p className="text-gray-600">No orders found.</p>
           </div>
         )}
       </div>

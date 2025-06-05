@@ -10,6 +10,7 @@ import { Eye, ShoppingCart } from 'lucide-react';
 
 const Shop = () => {
   const { items, loading } = useInventory();
+  const { dispatch } = useCart();
   const [selectedCategory, setSelectedCategory] = useState('All');
   const [searchTerm, setSearchTerm] = useState('');
   const [sortBy, setSortBy] = useState('name');
@@ -47,6 +48,40 @@ const Shop = () => {
 
     return filtered;
   }, [items, selectedCategory, searchTerm, sortBy]);
+
+  const handleAddToCart = (product: any) => {
+    if (!product.in_stock) {
+      toast({
+        title: "Out of Stock",
+        description: "This item is currently unavailable.",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    dispatch({ type: 'ADD_TO_CART', product: {
+      id: product.id,
+      name: product.name,
+      price: product.price,
+      images: product.images || ['/placeholder.svg'],
+      category: product.category,
+      description: product.description,
+      inStock: product.in_stock
+    }});
+    
+    toast({
+      title: "Added to Cart",
+      description: `${product.name} has been added to your cart.`,
+    });
+  };
+
+  const handleViewProduct = (product: any) => {
+    // Create a modal or navigate to product detail
+    toast({
+      title: product.name,
+      description: product.description || "View more details about this product",
+    });
+  };
 
   if (loading) {
     return (
@@ -154,11 +189,20 @@ const Shop = () => {
                   </div>
                 )}
                 <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-1 sm:gap-2">
-                  <Button size="sm" className="bg-white/90 text-gray-800 hover:bg-white text-xs sm:text-sm p-2 sm:p-3">
+                  <Button 
+                    size="sm" 
+                    onClick={() => handleViewProduct(product)}
+                    className="bg-white/90 text-gray-800 hover:bg-white text-xs sm:text-sm p-2 sm:p-3"
+                  >
                     <Eye className="h-3 w-3 sm:h-4 sm:w-4 sm:mr-1" />
                     <span className="hidden sm:inline">View</span>
                   </Button>
-                  <Button size="sm" className="bg-pink-500 hover:bg-pink-600 text-white text-xs sm:text-sm p-2 sm:p-3" disabled={!product.in_stock}>
+                  <Button 
+                    size="sm" 
+                    onClick={() => handleAddToCart(product)}
+                    className="bg-pink-500 hover:bg-pink-600 text-white text-xs sm:text-sm p-2 sm:p-3" 
+                    disabled={!product.in_stock}
+                  >
                     <ShoppingCart className="h-3 w-3 sm:h-4 sm:w-4 sm:mr-1" />
                     <span className="hidden sm:inline">Add</span>
                   </Button>

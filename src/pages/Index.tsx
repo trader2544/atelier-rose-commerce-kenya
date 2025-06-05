@@ -214,16 +214,16 @@ const Index = () => {
 
             {/* Mobile Testimonials - Faster Infinite Scroll with smaller cards */}
             <div className="md:hidden relative overflow-hidden">
-              <div className="flex animate-scroll gap-3" style={{ animationDuration: '15s' }}>
+              <div className="flex animate-scroll gap-3" style={{ animationDuration: '8s' }}>
                 {[...testimonials, ...testimonials].map((testimonial, index) => (
-                  <div key={index} className="glassmorphic text-center p-4 min-w-[240px] flex-shrink-0">
-                    <div className="flex justify-center mb-3">
+                  <div key={index} className="glassmorphic text-center p-3 min-w-[200px] flex-shrink-0">
+                    <div className="flex justify-center mb-2">
                       {[...Array(testimonial.rating)].map((_, i) => (
-                        <span key={i} className="text-pink-400 text-sm">★</span>
+                        <span key={i} className="text-pink-400 text-xs">★</span>
                       ))}
                     </div>
-                    <p className="text-gray-600 italic mb-3 text-xs line-clamp-3">"{testimonial.text}"</p>
-                    <p className="font-medium text-gray-800 text-sm">{testimonial.name}</p>
+                    <p className="text-gray-600 italic mb-2 text-xs line-clamp-3">"{testimonial.text}"</p>
+                    <p className="font-medium text-gray-800 text-xs">{testimonial.name}</p>
                   </div>
                 ))}
               </div>

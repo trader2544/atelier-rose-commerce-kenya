@@ -21,14 +21,9 @@ const Hero = () => {
       {/* Content */}
       <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
         <div className="animate-fade-in">
-          {/* Logo */}
-          <div className="mb-8">
-            <img 
-              src="/lovable-uploads/2775f7ab-5f14-4745-8ef9-2f8676acd727.png" 
-              alt="ELSO Boutique Logo"
-              className="w-48 sm:w-64 md:w-80 mx-auto"
-            />
-          </div>
+          <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-light text-gray-800 mb-6 sm:mb-8">
+            Welcome to <span className="text-pink-600">ELSO</span>
+          </h1>
           
           <p className="text-lg sm:text-xl md:text-2xl text-gray-700 mb-6 sm:mb-8 max-w-3xl mx-auto font-light leading-relaxed">
             Discover elegance in every piece. Handcrafted luxury for the modern woman.
@@ -36,7 +31,7 @@ const Hero = () => {
           
           <div className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-8 sm:mb-12">
             <Link to="/shop">
-              <Button className="bg-gradient-to-r from-pink-500 to-pink-600 hover:from-pink-600 hover:to-pink-700 text-white text-sm sm:text-lg px-6 sm:px-8 py-3 sm:py-4 flex items-center space-x-2 shadow-lg hover:shadow-xl transition-all">
+              <Button className="bg-pink-500 hover:bg-pink-600 text-white text-sm sm:text-lg px-6 sm:px-8 py-3 sm:py-4 flex items-center space-x-2 shadow-lg hover:shadow-xl transition-all">
                 <span>Shop Collection</span>
                 <ArrowRight className="h-4 w-4 sm:h-5 sm:w-5" />
               </Button>
@@ -67,7 +62,7 @@ const Hero = () => {
               <h3 className="text-base sm:text-lg font-medium text-gray-800 mb-2">Rose Gold Collection</h3>
               <p className="text-gray-600 text-xs sm:text-sm mb-3">Elegant pieces that define luxury</p>
               <Link to="/shop">
-                <Button className="w-full bg-gradient-to-r from-pink-500 to-pink-600 hover:from-pink-600 hover:to-pink-700 text-white text-sm">
+                <Button className="w-full bg-pink-500 hover:bg-pink-600 text-white text-sm">
                   Explore Now
                 </Button>
               </Link>

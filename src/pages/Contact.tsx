@@ -1,8 +1,10 @@
 
 import React, { useState } from 'react';
+import { Phone, Mail, MapPin, Send } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { toast } from '@/hooks/use-toast';
 
 const Contact = () => {
@@ -12,183 +14,162 @@ const Contact = () => {
     subject: '',
     message: ''
   });
-  const [isLoading, setIsLoading] = useState(false);
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    setIsLoading(true);
-
-    // Simulate form submission
-    setTimeout(() => {
-      toast({
-        title: "Message Sent!",
-        description: "Thank you for contacting us. We'll get back to you soon.",
-      });
-      setFormData({ name: '', email: '', subject: '', message: '' });
-      setIsLoading(false);
-    }, 1000);
+    // Handle form submission
+    toast({
+      title: "Message Sent",
+      description: "Thank you for your message. We'll get back to you soon!",
+    });
+    setFormData({ name: '', email: '', subject: '', message: '' });
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    setFormData(prev => ({
-      ...prev,
+    setFormData({
+      ...formData,
       [e.target.name]: e.target.value
-    }));
+    });
   };
 
   return (
-    <div className="min-h-screen pt-20 pb-16">
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-        {/* Header */}
-        <div className="text-center mb-12">
+    <div className="min-h-screen pt-20 pb-16 bg-gradient-to-br from-pink-50/30 via-gray-50/30 to-purple-50/30 relative overflow-hidden">
+      <div className="love-shapes"></div>
+      
+      <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        {/* Hero Section */}
+        <div className="text-center mb-16">
           <h1 className="text-4xl md:text-5xl font-light text-gray-800 mb-6">
-            Get In Touch
+            Contact <span className="text-pink-600">Us</span>
           </h1>
-          <p className="text-xl text-gray-600 leading-relaxed max-w-2xl mx-auto">
+          <p className="text-xl text-gray-600 max-w-3xl mx-auto leading-relaxed">
             We'd love to hear from you. Send us a message and we'll respond as soon as possible.
           </p>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
           {/* Contact Form */}
-          <div className="luxury-card">
-            <div className="p-8">
-              <h2 className="text-2xl font-medium text-gray-800 mb-6">Send us a message</h2>
-              
+          <Card className="glassmorphic">
+            <CardHeader>
+              <CardTitle className="text-2xl font-light text-gray-800">Send us a Message</CardTitle>
+            </CardHeader>
+            <CardContent>
               <form onSubmit={handleSubmit} className="space-y-6">
                 <div>
-                  <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-2">
-                    Full Name
-                  </label>
                   <Input
-                    id="name"
                     name="name"
-                    type="text"
+                    placeholder="Your Name"
                     value={formData.name}
                     onChange={handleChange}
                     required
-                    className="border-rose-200 focus:border-rose-400"
+                    className="bg-white/70 border-pink-200 focus:border-pink-400"
                   />
                 </div>
-
+                
                 <div>
-                  <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
-                    Email Address
-                  </label>
                   <Input
-                    id="email"
                     name="email"
                     type="email"
+                    placeholder="Your Email"
                     value={formData.email}
                     onChange={handleChange}
                     required
-                    className="border-rose-200 focus:border-rose-400"
+                    className="bg-white/70 border-pink-200 focus:border-pink-400"
                   />
                 </div>
-
+                
                 <div>
-                  <label htmlFor="subject" className="block text-sm font-medium text-gray-700 mb-2">
-                    Subject
-                  </label>
                   <Input
-                    id="subject"
                     name="subject"
-                    type="text"
+                    placeholder="Subject"
                     value={formData.subject}
                     onChange={handleChange}
                     required
-                    className="border-rose-200 focus:border-rose-400"
+                    className="bg-white/70 border-pink-200 focus:border-pink-400"
                   />
                 </div>
-
+                
                 <div>
-                  <label htmlFor="message" className="block text-sm font-medium text-gray-700 mb-2">
-                    Message
-                  </label>
                   <Textarea
-                    id="message"
                     name="message"
+                    placeholder="Your Message"
                     value={formData.message}
                     onChange={handleChange}
-                    rows={5}
                     required
-                    className="border-rose-200 focus:border-rose-400"
+                    rows={5}
+                    className="bg-white/70 border-pink-200 focus:border-pink-400"
                   />
                 </div>
-
+                
                 <Button
                   type="submit"
-                  disabled={isLoading}
-                  className="w-full btn-primary"
+                  className="w-full bg-pink-500 hover:bg-pink-600 text-white flex items-center justify-center space-x-2"
                 >
-                  {isLoading ? 'Sending...' : 'Send Message'}
+                  <Send className="h-4 w-4" />
+                  <span>Send Message</span>
                 </Button>
               </form>
-            </div>
-          </div>
+            </CardContent>
+          </Card>
 
           {/* Contact Information */}
           <div className="space-y-8">
-            <div className="luxury-card">
-              <div className="p-6">
-                <h3 className="text-lg font-medium text-gray-800 mb-4">Visit Our Store</h3>
-                <div className="space-y-2 text-gray-600">
-                  <p>Westlands Shopping Center</p>
-                  <p>Waiyaki Way, Westlands</p>
-                  <p>Nairobi, Kenya</p>
+            <Card className="glassmorphic">
+              <CardContent className="p-6">
+                <div className="flex items-center space-x-4">
+                  <Phone className="h-8 w-8 text-pink-500" />
+                  <div>
+                    <h3 className="font-medium text-gray-800">Phone</h3>
+                    <p className="text-gray-600">+254 712 345 678</p>
+                  </div>
                 </div>
-              </div>
-            </div>
+              </CardContent>
+            </Card>
 
-            <div className="luxury-card">
-              <div className="p-6">
-                <h3 className="text-lg font-medium text-gray-800 mb-4">Contact Information</h3>
-                <div className="space-y-2 text-gray-600">
-                  <p><strong>Phone:</strong> +254 700 000 000</p>
-                  <p><strong>Email:</strong> hello@elsoatelier.co.ke</p>
-                  <p><strong>WhatsApp:</strong> +254 700 000 000</p>
+            <Card className="glassmorphic">
+              <CardContent className="p-6">
+                <div className="flex items-center space-x-4">
+                  <Mail className="h-8 w-8 text-pink-500" />
+                  <div>
+                    <h3 className="font-medium text-gray-800">Email</h3>
+                    <p className="text-gray-600">hello@elso.com</p>
+                  </div>
                 </div>
-              </div>
-            </div>
+              </CardContent>
+            </Card>
 
-            <div className="luxury-card">
-              <div className="p-6">
-                <h3 className="text-lg font-medium text-gray-800 mb-4">Store Hours</h3>
-                <div className="space-y-2 text-gray-600">
-                  <p><strong>Monday - Friday:</strong> 9:00 AM - 7:00 PM</p>
-                  <p><strong>Saturday:</strong> 9:00 AM - 6:00 PM</p>
-                  <p><strong>Sunday:</strong> 11:00 AM - 5:00 PM</p>
+            <Card className="glassmorphic">
+              <CardContent className="p-6">
+                <div className="flex items-center space-x-4">
+                  <MapPin className="h-8 w-8 text-pink-500" />
+                  <div>
+                    <h3 className="font-medium text-gray-800">Location</h3>
+                    <p className="text-gray-600">Nairobi, Kenya</p>
+                  </div>
                 </div>
-              </div>
-            </div>
+              </CardContent>
+            </Card>
 
-            <div className="luxury-card">
-              <div className="p-6">
-                <h3 className="text-lg font-medium text-gray-800 mb-4">Follow Us</h3>
-                <div className="flex space-x-4">
-                  <a
-                    href="https://instagram.com"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-gray-600 hover:text-rose-600 transition-colors"
-                  >
-                    <div className="w-10 h-10 bg-gradient-to-r from-purple-500 to-pink-500 rounded-lg flex items-center justify-center text-white font-bold">
-                      IG
-                    </div>
-                  </a>
-                  <a
-                    href="https://facebook.com"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-gray-600 hover:text-rose-600 transition-colors"
-                  >
-                    <div className="w-10 h-10 bg-blue-600 rounded-lg flex items-center justify-center text-white font-bold">
-                      f
-                    </div>
-                  </a>
+            {/* Business Hours */}
+            <Card className="glassmorphic">
+              <CardHeader>
+                <CardTitle className="text-lg font-medium text-gray-800">Business Hours</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-2">
+                <div className="flex justify-between">
+                  <span className="text-gray-600">Monday - Friday</span>
+                  <span className="text-gray-800">9:00 AM - 6:00 PM</span>
                 </div>
-              </div>
-            </div>
+                <div className="flex justify-between">
+                  <span className="text-gray-600">Saturday</span>
+                  <span className="text-gray-800">10:00 AM - 4:00 PM</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-gray-600">Sunday</span>
+                  <span className="text-gray-800">Closed</span>
+                </div>
+              </CardContent>
+            </Card>
           </div>
         </div>
       </div>

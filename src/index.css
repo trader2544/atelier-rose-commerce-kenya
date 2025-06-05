@@ -70,11 +70,11 @@ body {
 
 /* Glassmorphic effect */
 .glassmorphic {
-  background: rgba(255, 255, 255, 0.15);
+  background: rgba(255, 255, 255, 0.25);
   backdrop-filter: blur(10px);
   border: 1px solid rgba(255, 255, 255, 0.18);
   border-radius: 16px;
-  box-shadow: 0 8px 32px rgba(255, 192, 203, 0.1);
+  box-shadow: 0 8px 32px rgba(255, 192, 203, 0.15);
 }
 
 /* Love shapes animation */
@@ -97,7 +97,7 @@ body {
   height: 8px;
   background: #ff69b4;
   border-radius: 50%;
-  opacity: 0.1;
+  opacity: 0.15;
   animation: float 15s infinite linear;
 }
 
@@ -113,13 +113,13 @@ body {
   animation-duration: 25s;
 }
 
-/* Create multiple love shapes with reduced opacity */
+/* Create multiple love shapes with increased opacity */
 .love-shapes {
   background-image: 
-    radial-gradient(circle at 20% 20%, rgba(255, 105, 180, 0.03) 2px, transparent 2px),
-    radial-gradient(circle at 80% 40%, rgba(255, 182, 193, 0.03) 1px, transparent 1px),
-    radial-gradient(circle at 40% 80%, rgba(255, 105, 180, 0.03) 3px, transparent 3px),
-    radial-gradient(circle at 60% 60%, rgba(255, 182, 193, 0.03) 2px, transparent 2px);
+    radial-gradient(circle at 20% 20%, rgba(255, 105, 180, 0.08) 2px, transparent 2px),
+    radial-gradient(circle at 80% 40%, rgba(255, 182, 193, 0.08) 1px, transparent 1px),
+    radial-gradient(circle at 40% 80%, rgba(255, 105, 180, 0.08) 3px, transparent 3px),
+    radial-gradient(circle at 60% 60%, rgba(255, 182, 193, 0.08) 2px, transparent 2px);
   background-size: 200px 200px, 150px 150px, 300px 300px, 250px 250px;
   animation: drift 30s infinite linear;
 }
@@ -149,7 +149,7 @@ body {
 }
 
 .animate-scroll {
-  animation: scroll 15s linear infinite;
+  animation: scroll 8s linear infinite;
 }
 
 /* Custom scrollbar */

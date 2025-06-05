@@ -1,13 +1,15 @@
 
 import React, { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Menu, X, ShoppingCart, Heart, Search } from 'lucide-react';
+import { Menu, X, ShoppingCart, Heart, Search, Shield } from 'lucide-react';
 import { useCart } from '@/contexts/CartContext';
+import { useAuth } from '@/hooks/useAuth';
 import UserMenu from './UserMenu';
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
   const { state } = useCart();
+  const { user, isAdmin } = useAuth();
   const location = useLocation();
 
   const isActive = (path: string) => location.pathname === path;
@@ -17,13 +19,12 @@ const Navbar = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
-          <Link to="/" className="flex items-center space-x-2">
-            <div className="w-8 h-8 bg-gradient-to-r from-blue-800 to-blue-900 rounded-lg flex items-center justify-center">
-              <span className="text-white font-bold text-sm">E</span>
-            </div>
-            <span className="text-xl font-light tracking-wide text-gray-800">
-              Elso Atelier
-            </span>
+          <Link to="/" className="flex items-center">
+            <img 
+              src="/lovable-uploads/2775f7ab-5f14-4745-8ef9-2f8676acd727.png" 
+              alt="ELSO Boutique Logo"
+              className="h-10 w-auto"
+            />
           </Link>
 
           {/* Desktop Navigation */}
@@ -31,7 +32,7 @@ const Navbar = () => {
             <Link
               to="/"
               className={`font-medium tracking-wide transition-colors ${
-                isActive('/') ? 'text-blue-800' : 'text-gray-700 hover:text-blue-800'
+                isActive('/') ? 'text-pink-600' : 'text-gray-700 hover:text-pink-600'
               }`}
             >
               Home
@@ -39,7 +40,7 @@ const Navbar = () => {
             <Link
               to="/shop"
               className={`font-medium tracking-wide transition-colors ${
-                isActive('/shop') ? 'text-blue-800' : 'text-gray-700 hover:text-blue-800'
+                isActive('/shop') ? 'text-pink-600' : 'text-gray-700 hover:text-pink-600'
               }`}
             >
               Shop
@@ -47,7 +48,7 @@ const Navbar = () => {
             <Link
               to="/about"
               className={`font-medium tracking-wide transition-colors ${
-                isActive('/about') ? 'text-blue-800' : 'text-gray-700 hover:text-blue-800'
+                isActive('/about') ? 'text-pink-600' : 'text-gray-700 hover:text-pink-600'
               }`}
             >
               About
@@ -55,7 +56,7 @@ const Navbar = () => {
             <Link
               to="/contact"
               className={`font-medium tracking-wide transition-colors ${
-                isActive('/contact') ? 'text-blue-800' : 'text-gray-700 hover:text-blue-800'
+                isActive('/contact') ? 'text-pink-600' : 'text-gray-700 hover:text-pink-600'
               }`}
             >
               Contact
@@ -64,7 +65,7 @@ const Navbar = () => {
 
           {/* Desktop Actions */}
           <div className="hidden md:flex items-center space-x-4">
-            <button className="text-gray-700 hover:text-blue-800 transition-colors">
+            <button className="text-gray-700 hover:text-pink-600 transition-colors">
               <Search className="h-5 w-5" />
             </button>
             <button className="text-gray-700 hover:text-pink-500 transition-colors">
@@ -72,7 +73,7 @@ const Navbar = () => {
             </button>
             <Link
               to="/cart"
-              className="relative text-gray-700 hover:text-blue-800 transition-colors"
+              className="relative text-gray-700 hover:text-pink-600 transition-colors"
             >
               <ShoppingCart className="h-5 w-5" />
               {state.items.length > 0 && (
@@ -81,14 +82,33 @@ const Navbar = () => {
                 </span>
               )}
             </Link>
+            {user && isAdmin && (
+              <Link
+                to="/admin"
+                className="text-gray-700 hover:text-pink-600 transition-colors"
+                title="Admin Dashboard"
+              >
+                <Shield className="h-5 w-5" />
+              </Link>
+            )}
             <UserMenu />
           </div>
 
-          {/* Mobile menu button */}
+          {/* Mobile menu button and actions */}
           <div className="md:hidden flex items-center space-x-4">
+            {user && isAdmin && (
+              <Link
+                to="/admin"
+                className="text-gray-700 hover:text-pink-600 transition-colors"
+                title="Admin Dashboard"
+              >
+                <Shield className="h-5 w-5" />
+              </Link>
+            )}
+            <UserMenu />
             <Link
               to="/cart"
-              className="relative text-gray-700 hover:text-blue-800 transition-colors"
+              className="relative text-gray-700 hover:text-pink-600 transition-colors"
             >
               <ShoppingCart className="h-5 w-5" />
               {state.items.length > 0 && (
@@ -99,7 +119,7 @@ const Navbar = () => {
             </Link>
             <button
               onClick={() => setIsOpen(!isOpen)}
-              className="text-gray-700 hover:text-blue-800 transition-colors"
+              className="text-gray-700 hover:text-pink-600 transition-colors"
             >
               {isOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
             </button>
@@ -114,7 +134,7 @@ const Navbar = () => {
                 to="/"
                 onClick={() => setIsOpen(false)}
                 className={`block px-3 py-2 rounded-md font-medium transition-colors ${
-                  isActive('/') ? 'text-blue-800 bg-blue-50' : 'text-gray-700 hover:text-blue-800 hover:bg-blue-50'
+                  isActive('/') ? 'text-pink-600 bg-pink-50' : 'text-gray-700 hover:text-pink-600 hover:bg-pink-50'
                 }`}
               >
                 Home
@@ -123,7 +143,7 @@ const Navbar = () => {
                 to="/shop"
                 onClick={() => setIsOpen(false)}
                 className={`block px-3 py-2 rounded-md font-medium transition-colors ${
-                  isActive('/shop') ? 'text-blue-800 bg-blue-50' : 'text-gray-700 hover:text-blue-800 hover:bg-blue-50'
+                  isActive('/shop') ? 'text-pink-600 bg-pink-50' : 'text-gray-700 hover:text-pink-600 hover:bg-pink-50'
                 }`}
               >
                 Shop
@@ -132,7 +152,7 @@ const Navbar = () => {
                 to="/about"
                 onClick={() => setIsOpen(false)}
                 className={`block px-3 py-2 rounded-md font-medium transition-colors ${
-                  isActive('/about') ? 'text-blue-800 bg-blue-50' : 'text-gray-700 hover:text-blue-800 hover:bg-blue-50'
+                  isActive('/about') ? 'text-pink-600 bg-pink-50' : 'text-gray-700 hover:text-pink-600 hover:bg-pink-50'
                 }`}
               >
                 About
@@ -141,14 +161,11 @@ const Navbar = () => {
                 to="/contact"
                 onClick={() => setIsOpen(false)}
                 className={`block px-3 py-2 rounded-md font-medium transition-colors ${
-                  isActive('/contact') ? 'text-blue-800 bg-blue-50' : 'text-gray-700 hover:text-blue-800 hover:bg-blue-50'
+                  isActive('/contact') ? 'text-pink-600 bg-pink-50' : 'text-gray-700 hover:text-pink-600 hover:bg-pink-50'
                 }`}
               >
                 Contact
               </Link>
-              <div className="border-t border-slate-200 pt-3 mt-3">
-                <UserMenu />
-              </div>
             </div>
           </div>
         )}
