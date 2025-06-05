@@ -66,6 +66,30 @@ export interface UserRole {
   created_at: string;
 }
 
+// New inventory types
+export interface DatabaseItem {
+  item_id: string;
+  item_code: string;
+  name: string;
+  category: string;
+  description: string | null;
+  created_at: string;
+}
+
+export interface DatabaseItemVariant {
+  variant_id: string;
+  item_id: string;
+  variant_name: string;
+  quantity: number;
+  price: number;
+  images: string[];
+  created_at: string;
+}
+
+export interface ItemWithVariants extends DatabaseItem {
+  variants: DatabaseItemVariant[];
+}
+
 // Extended types for admin components
 export interface OrderWithItems extends DatabaseOrder {
   order_items: DatabaseOrderItem[];
