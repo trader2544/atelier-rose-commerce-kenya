@@ -1,16 +1,18 @@
 
 import React, { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import { MessageWithProfile } from '@/types/database';
-import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Textarea } from '@/components/ui/textarea';
-import { toast } from '@/hooks/use-toast';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { MessageSquare, Eye, Reply } from 'lucide-react';
+import { DatabaseMessage, DatabaseProfile } from '@/types/database';
+
+interface MessageWithProfile extends DatabaseMessage {
+  profiles?: DatabaseProfile;
+}
 
 const AdminMessages = () => {
   const [messages, setMessages] = useState<MessageWithProfile[]>([]);
-  const [selectedMessage, setSelectedMessage] = useState<MessageWithProfile | null>(null);
-  const [reply, setReply] = useState('');
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -18,145 +20,122 @@ const AdminMessages = () => {
   }, []);
 
   const fetchMessages = async () => {
-    const { data, error } = await supabase
-      .from('messages')
-      .select(`
-        *,
-        profiles:user_id (
-          id,
-          email,
-          full_name,
-          phone
-        )
-      `)
-      .order('created_at', { ascending: false });
+    try {
+      const { data, error } = await supabase
+        .from('messages')
+        .select(`
+          *,
+          profiles (*)
+        `)
+        .order('created_at', { ascending: false });
 
-    if (error) {
-      console.error('Error fetching messages:', error);
-      toast({
-        title: "Error",
-        description: "Failed to fetch messages",
-        variant: "destructive",
-      });
-    } else {
+      if (error) throw error;
       setMessages(data || []);
+    } catch (error) {
+      console.error('Error fetching messages:', error);
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   };
 
-  const sendReply = async () => {
-    if (!selectedMessage || !reply.trim()) return;
+  const markAsRead = async (messageId: string) => {
+    try {
+      const { error } = await supabase
+        .from('messages')
+        .update({ is_read: true })
+        .eq('id', messageId);
 
-    const { error } = await supabase
-      .from('messages')
-      .insert({
-        user_id: selectedMessage.user_id,
-        admin_id: selectedMessage.admin_id,
-        subject: `Re: ${selectedMessage.subject}`,
-        content: reply,
-        is_from_admin: true,
-        is_read: false
-      });
-
-    if (error) {
-      toast({
-        title: "Error",
-        description: "Failed to send reply",
-        variant: "destructive",
-      });
-    } else {
-      toast({
-        title: "Success",
-        description: "Reply sent successfully",
-      });
-      setReply('');
-      setSelectedMessage(null);
+      if (error) throw error;
       fetchMessages();
+    } catch (error) {
+      console.error('Error marking message as read:', error);
     }
   };
 
   if (loading) {
-    return <div className="p-6">Loading messages...</div>;
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-pink-50/30 via-gray-50/30 to-purple-50/30 relative overflow-hidden">
+        <div className="love-shapes"></div>
+        <div className="relative z-10 p-4 sm:p-6">
+          <div className="animate-pulse">
+            <div className="h-8 bg-gray-200 rounded w-1/4 mb-6"></div>
+            <div className="space-y-4">
+              {[...Array(5)].map((_, i) => (
+                <div key={i} className="h-24 bg-gray-200 rounded-lg"></div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+    );
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-pink-50 via-white to-purple-50">
-      <div className="p-6">
-        <h2 className="text-2xl font-light text-gray-800 mb-6">Customer Messages</h2>
-        
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {/* Messages List */}
-          <div className="space-y-4">
-            {messages.map((message) => (
-              <Card key={message.id} className="luxury-card cursor-pointer hover:shadow-lg transition-all duration-300" onClick={() => setSelectedMessage(message)}>
-                <CardHeader className="pb-3">
-                  <CardTitle className="text-sm font-medium text-pink-800">
-                    {message.subject}
-                  </CardTitle>
-                  <p className="text-xs text-gray-600">
-                    From: {message.profiles?.full_name || message.profiles?.email || 'Unknown User'}
-                  </p>
-                  <p className="text-xs text-gray-500">
-                    {new Date(message.created_at).toLocaleDateString()}
-                  </p>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-sm text-gray-700 line-clamp-2">
-                    {message.content}
-                  </p>
-                  {!message.is_read && (
-                    <span className="inline-block mt-2 px-2 py-1 bg-pink-100 text-pink-800 text-xs rounded-full">
-                      New
+    <div className="min-h-screen bg-gradient-to-br from-pink-50/30 via-gray-50/30 to-purple-50/30 relative overflow-hidden">
+      <div className="love-shapes"></div>
+      
+      <div className="relative z-10 p-4 sm:p-6">
+        <div className="flex justify-between items-center mb-6">
+          <h2 className="text-xl sm:text-2xl font-light text-gray-800">Messages</h2>
+          <Badge className="bg-pink-100 text-pink-800">
+            {messages.filter(m => !m.is_read).length} unread
+          </Badge>
+        </div>
+
+        <div className="space-y-4">
+          {messages.map((message) => (
+            <Card key={message.id} className={`glassmorphic transition-all duration-300 ${!message.is_read ? 'border-pink-300' : ''}`}>
+              <CardHeader className="pb-3">
+                <div className="flex justify-between items-start">
+                  <div className="flex-1">
+                    <CardTitle className="text-base sm:text-lg text-gray-800 mb-1">
+                      {message.subject}
+                    </CardTitle>
+                    <p className="text-xs sm:text-sm text-gray-600">
+                      From: {message.profiles?.full_name || message.profiles?.email || 'Unknown'}
+                    </p>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    {!message.is_read && (
+                      <Badge className="bg-pink-100 text-pink-800 text-xs">New</Badge>
+                    )}
+                    <span className="text-xs text-gray-500">
+                      {new Date(message.created_at).toLocaleDateString()}
                     </span>
-                  )}
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-
-          {/* Message Detail & Reply */}
-          {selectedMessage && (
-            <Card className="luxury-card">
-              <CardHeader>
-                <CardTitle className="text-pink-800">{selectedMessage.subject}</CardTitle>
-                <p className="text-sm text-gray-600">
-                  From: {selectedMessage.profiles?.full_name || selectedMessage.profiles?.email || 'Unknown User'}
-                </p>
-                <p className="text-xs text-gray-500">
-                  {new Date(selectedMessage.created_at).toLocaleString()}
-                </p>
+                  </div>
+                </div>
               </CardHeader>
-              <CardContent className="space-y-4">
-                <div>
-                  <h4 className="font-medium text-gray-800 mb-2">Message:</h4>
-                  <p className="text-gray-700 bg-gray-50 p-3 rounded-lg">
-                    {selectedMessage.content}
-                  </p>
-                </div>
-
-                <div>
-                  <h4 className="font-medium text-gray-800 mb-2">Reply:</h4>
-                  <Textarea
-                    value={reply}
-                    onChange={(e) => setReply(e.target.value)}
-                    placeholder="Type your reply here..."
-                    className="border-pink-200 focus:border-pink-400"
-                    rows={4}
-                  />
-                </div>
-
-                <div className="flex space-x-3">
-                  <Button onClick={sendReply} className="bg-pink-600 hover:bg-pink-700 text-white">
-                    Send Reply
+              <CardContent>
+                <p className="text-gray-700 mb-4 text-sm line-clamp-3">
+                  {message.content}
+                </p>
+                <div className="flex flex-wrap gap-2">
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => markAsRead(message.id)}
+                    disabled={message.is_read}
+                    className="text-xs"
+                  >
+                    <Eye className="h-3 w-3 mr-1" />
+                    {message.is_read ? 'Read' : 'Mark as Read'}
                   </Button>
-                  <Button variant="outline" onClick={() => setSelectedMessage(null)} className="border-pink-200 hover:bg-pink-50">
-                    Close
+                  <Button size="sm" className="bg-pink-500 hover:bg-pink-600 text-white text-xs">
+                    <Reply className="h-3 w-3 mr-1" />
+                    Reply
                   </Button>
                 </div>
               </CardContent>
             </Card>
-          )}
+          ))}
         </div>
+
+        {messages.length === 0 && (
+          <div className="text-center py-16">
+            <MessageSquare className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+            <p className="text-gray-600 text-base sm:text-lg">No messages yet.</p>
+          </div>
+        )}
       </div>
     </div>
   );

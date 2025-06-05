@@ -1,4 +1,3 @@
-
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
 @tailwind base;
 @tailwind components;
@@ -71,7 +70,7 @@ body {
 
 /* Glassmorphic effect */
 .glassmorphic {
-  background: rgba(255, 255, 255, 0.25);
+  background: rgba(255, 255, 255, 0.15);
   backdrop-filter: blur(10px);
   border: 1px solid rgba(255, 255, 255, 0.18);
   border-radius: 16px;
@@ -114,31 +113,13 @@ body {
   animation-duration: 25s;
 }
 
-/* Additional floating elements */
-@keyframes float {
-  0% {
-    transform: translateY(100vh) rotate(0deg) scale(0.5);
-    opacity: 0;
-  }
-  10% {
-    opacity: 0.1;
-  }
-  90% {
-    opacity: 0.1;
-  }
-  100% {
-    transform: translateY(-100px) rotate(360deg) scale(1);
-    opacity: 0;
-  }
-}
-
-/* Create multiple love shapes */
+/* Create multiple love shapes with reduced opacity */
 .love-shapes {
   background-image: 
-    radial-gradient(circle at 20% 20%, rgba(255, 105, 180, 0.05) 2px, transparent 2px),
-    radial-gradient(circle at 80% 40%, rgba(255, 182, 193, 0.05) 1px, transparent 1px),
-    radial-gradient(circle at 40% 80%, rgba(255, 105, 180, 0.05) 3px, transparent 3px),
-    radial-gradient(circle at 60% 60%, rgba(255, 182, 193, 0.05) 2px, transparent 2px);
+    radial-gradient(circle at 20% 20%, rgba(255, 105, 180, 0.03) 2px, transparent 2px),
+    radial-gradient(circle at 80% 40%, rgba(255, 182, 193, 0.03) 1px, transparent 1px),
+    radial-gradient(circle at 40% 80%, rgba(255, 105, 180, 0.03) 3px, transparent 3px),
+    radial-gradient(circle at 60% 60%, rgba(255, 182, 193, 0.03) 2px, transparent 2px);
   background-size: 200px 200px, 150px 150px, 300px 300px, 250px 250px;
   animation: drift 30s infinite linear;
 }
@@ -157,7 +138,7 @@ body {
   animation-duration: 10s;
 }
 
-/* Mobile testimonials scroll */
+/* Mobile testimonials scroll - faster animation */
 @keyframes scroll {
   0% {
     transform: translateX(0);
@@ -168,7 +149,7 @@ body {
 }
 
 .animate-scroll {
-  animation: scroll 20s linear infinite;
+  animation: scroll 15s linear infinite;
 }
 
 /* Custom scrollbar */
@@ -194,10 +175,16 @@ body {
   .glassmorphic {
     border-radius: 12px;
     backdrop-filter: blur(8px);
+    background: rgba(255, 255, 255, 0.2);
   }
   
   .love-shapes {
     background-size: 100px 100px, 75px 75px, 150px 150px, 125px 125px;
+  }
+  
+  /* Mobile optimizations */
+  .animate-scroll {
+    animation: scroll 12s linear infinite;
   }
 }
 
@@ -267,4 +254,25 @@ body {
   -webkit-line-clamp: 3;
   -webkit-box-orient: vertical;
   overflow: hidden;
+}
+
+/* Mobile app-like improvements */
+@media (max-width: 640px) {
+  /* Smaller text for mobile */
+  .text-xs { font-size: 0.7rem; }
+  .text-sm { font-size: 0.8rem; }
+  .text-base { font-size: 0.9rem; }
+  
+  /* Tighter spacing for mobile */
+  .space-y-1 > * + * { margin-top: 0.15rem; }
+  .space-y-2 > * + * { margin-top: 0.3rem; }
+  .space-y-3 > * + * { margin-top: 0.5rem; }
+  .space-y-4 > * + * { margin-top: 0.75rem; }
+  
+  /* Better button sizing for mobile */
+  .btn-mobile {
+    padding: 0.5rem 0.75rem;
+    font-size: 0.8rem;
+    min-height: 2.5rem;
+  }
 }
