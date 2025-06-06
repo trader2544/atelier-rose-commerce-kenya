@@ -1,8 +1,8 @@
 
 import React, { useState, useMemo } from 'react';
-import { Link } from 'react-router-dom';
 import { useInventory } from '@/hooks/useInventory';
 import { useCart } from '@/contexts/CartContext';
+import ProductModal from '@/components/ProductModal';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -16,6 +16,8 @@ const Shop = () => {
   const [selectedCategory, setSelectedCategory] = useState('All');
   const [searchTerm, setSearchTerm] = useState('');
   const [sortBy, setSortBy] = useState('name');
+  const [selectedProduct, setSelectedProduct] = useState<any>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   const categories = ['All', ...new Set(items.map(item => item.category))];
 
@@ -78,10 +80,8 @@ const Shop = () => {
   };
 
   const handleViewProduct = (product: any) => {
-    toast({
-      title: product.name,
-      description: product.description || "Premium quality product with elegant design",
-    });
+    setSelectedProduct(product);
+    setIsModalOpen(true);
   };
 
   if (loading) {
@@ -198,17 +198,15 @@ const Shop = () => {
                     <Eye className="h-3 w-3 sm:h-4 sm:w-4 sm:mr-1" />
                     <span className="hidden sm:inline">View</span>
                   </Button>
-                  <Link to="/cart">
-                    <Button 
-                      size="sm" 
-                      onClick={() => handleAddToCart(product)}
-                      className="bg-pink-500 hover:bg-pink-600 text-white text-xs sm:text-sm p-2 sm:p-3" 
-                      disabled={!product.in_stock}
-                    >
-                      <ShoppingCart className="h-3 w-3 sm:h-4 sm:w-4 sm:mr-1" />
-                      <span className="hidden sm:inline">Add</span>
-                    </Button>
-                  </Link>
+                  <Button 
+                    size="sm" 
+                    onClick={() => handleAddToCart(product)}
+                    className="bg-pink-500 hover:bg-pink-600 text-white text-xs sm:text-sm p-2 sm:p-3" 
+                    disabled={!product.in_stock}
+                  >
+                    <ShoppingCart className="h-3 w-3 sm:h-4 sm:w-4 sm:mr-1" />
+                    <span className="hidden sm:inline">Add</span>
+                  </Button>
                 </div>
               </div>
               
@@ -245,6 +243,14 @@ const Shop = () => {
           </div>
         )}
       </div>
+
+      {/* Product Modal */}
+      <ProductModal
+        product={selectedProduct}
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        onAddToCart={handleAddToCart}
+      />
     </div>
   );
 };

@@ -10,7 +10,7 @@ import UserMenu from './UserMenu';
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
   const { state } = useCart();
-  const { user } = useAuth();
+  const { user, isAdmin } = useAuth();
 
   const toggleMenu = () => {
     setIsOpen(!isOpen);
@@ -20,8 +20,6 @@ const Navbar = () => {
     setIsOpen(false);
   };
 
-  const isAdmin = user?.email === 'odikacamillah585@gmail.com';
-
   return (
     <nav className="fixed top-0 w-full bg-white/95 backdrop-blur-sm border-b border-gray-100 z-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -29,7 +27,7 @@ const Navbar = () => {
           {/* Logo */}
           <Link to="/" className="flex items-center space-x-2">
             <img
-              src="/lovable-uploads/2775f7ab-5f14-4745-8ef9-2f8676acd727.png"
+              src="/lovable-uploads/f3f4ab23-dc2f-4925-a596-a079b08ced43.png"
               alt="ELSO"
               className="h-8 w-auto sm:h-10"
             />
