@@ -2,14 +2,41 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
-import { OrderWithItems } from '@/types/database';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { toast } from '@/hooks/use-toast';
 
+interface Order {
+  id: string;
+  user_id: string;
+  total: number;
+  status: string;
+  payment_status: string;
+  payment_method: string;
+  shipping_address: any;
+  created_at: string;
+  updated_at: string;
+  order_items: Array<{
+    id: string;
+    order_id: string;
+    product_id: string;
+    quantity: number;
+    price: number;
+    created_at: string;
+    product?: {
+      id: string;
+      name: string;
+      price: number;
+      images: string[];
+      description?: string;
+      category: string;
+    };
+  }>;
+}
+
 const Orders = () => {
   const { user } = useAuth();
-  const [orders, setOrders] = useState<OrderWithItems[]>([]);
+  const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -21,33 +48,38 @@ const Orders = () => {
   const fetchOrders = async () => {
     if (!user) return;
 
-    const { data, error } = await supabase
-      .from('orders')
-      .select(`
-        *,
-        order_items (
+    try {
+      const { data, error } = await supabase
+        .from('orders')
+        .select(`
           *,
-          product:product_id (
-            name,
-            price,
-            images
+          order_items (
+            *,
+            product:product_id (
+              id,
+              name,
+              price,
+              images,
+              description,
+              category
+            )
           )
-        )
-      `)
-      .eq('user_id', user.id)
-      .order('created_at', { ascending: false });
+        `)
+        .eq('user_id', user.id)
+        .order('created_at', { ascending: false });
 
-    if (error) {
+      if (error) throw error;
+      setOrders(data || []);
+    } catch (error) {
       console.error('Error fetching orders:', error);
       toast({
         title: "Error",
         description: "Failed to fetch orders",
         variant: "destructive",
       });
-    } else {
-      setOrders(data || []);
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   };
 
   const getStatusColor = (status: string) => {
@@ -76,6 +108,7 @@ const Orders = () => {
     return (
       <div className="min-h-screen bg-gradient-to-br from-pink-50 via-white to-purple-50 pt-20 pb-16 flex items-center justify-center">
         <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-pink-500 mx-auto mb-4"></div>
           <p className="text-gray-600">Loading your orders...</p>
         </div>
       </div>

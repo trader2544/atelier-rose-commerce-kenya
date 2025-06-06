@@ -1,100 +1,70 @@
 
 import React, { useState } from 'react';
-import { User, Settings, ShoppingBag, MessageSquare, LogOut } from 'lucide-react';
-import { useAuth } from '@/hooks/useAuth';
-import { Button } from '@/components/ui/button';
-import AuthModal from './AuthModal';
 import { Link } from 'react-router-dom';
+import { User, LogOut, ShoppingBag, Settings } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import { useAuth } from '@/hooks/useAuth';
 
 const UserMenu = () => {
-  const { user, profile, signOut } = useAuth();
-  const [showAuthModal, setShowAuthModal] = useState(false);
-  const [showMenu, setShowMenu] = useState(false);
-
-  const handleSignOut = async () => {
-    await signOut();
-    setShowMenu(false);
-  };
+  const { user, signOut, profile } = useAuth();
 
   if (!user) {
     return (
-      <>
-        <Button
-          onClick={() => setShowAuthModal(true)}
-          className="bg-pink-500 hover:bg-pink-600 text-white text-sm px-4 py-2"
-        >
+      <Link to="/auth">
+        <Button className="bg-pink-500 hover:bg-pink-600 text-white text-sm px-4 py-2">
           Sign In
         </Button>
-        <AuthModal
-          isOpen={showAuthModal}
-          onClose={() => setShowAuthModal(false)}
-        />
-      </>
+      </Link>
     );
   }
 
   return (
-    <div className="relative">
-      <button
-        onClick={() => setShowMenu(!showMenu)}
-        className="flex items-center space-x-2 text-gray-700 hover:text-pink-600 transition-colors"
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <Button variant="outline" size="sm" className="border-pink-200 hover:bg-pink-50 p-2">
+          <User className="h-4 w-4" />
+        </Button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent 
+        align="end" 
+        className="w-56 bg-white/95 backdrop-blur-sm border-pink-100"
       >
-        <div className="w-8 h-8 bg-pink-100 rounded-full flex items-center justify-center">
-          <User className="h-4 w-4 text-pink-600" />
+        <div className="px-3 py-2">
+          <p className="text-sm font-medium text-gray-800">
+            {profile?.full_name || user.email}
+          </p>
+          <p className="text-xs text-gray-600">{user.email}</p>
         </div>
-        <span className="hidden md:block font-medium">
-          {profile?.full_name || user.email}
-        </span>
-      </button>
-
-      {showMenu && (
-        <div className="absolute right-0 top-full mt-2 w-64 bg-white/95 backdrop-blur-sm rounded-lg shadow-lg border border-gray-200 py-2 z-50">
-          <div className="px-4 py-2 border-b border-gray-100">
-            <p className="font-medium text-gray-800">
-              {profile?.full_name || user.email}
-            </p>
-            <p className="text-sm text-gray-600">{user.email}</p>
-          </div>
-
-          <div className="py-1">
-            <Link
-              to="/profile"
-              className="flex items-center space-x-2 px-4 py-2 text-gray-700 hover:bg-pink-50 transition-colors"
-              onClick={() => setShowMenu(false)}
-            >
-              <Settings className="h-4 w-4" />
-              <span>Profile Settings</span>
-            </Link>
-
-            <Link
-              to="/orders"
-              className="flex items-center space-x-2 px-4 py-2 text-gray-700 hover:bg-pink-50 transition-colors"
-              onClick={() => setShowMenu(false)}
-            >
-              <ShoppingBag className="h-4 w-4" />
-              <span>My Orders</span>
-            </Link>
-
-            <Link
-              to="/messages"
-              className="flex items-center space-x-2 px-4 py-2 text-gray-700 hover:bg-pink-50 transition-colors"
-              onClick={() => setShowMenu(false)}
-            >
-              <MessageSquare className="h-4 w-4" />
-              <span>Messages</span>
-            </Link>
-
-            <button
-              onClick={handleSignOut}
-              className="flex items-center space-x-2 px-4 py-2 text-gray-700 hover:bg-pink-50 transition-colors w-full text-left"
-            >
-              <LogOut className="h-4 w-4" />
-              <span>Sign Out</span>
-            </button>
-          </div>
-        </div>
-      )}
-    </div>
+        <DropdownMenuSeparator />
+        <DropdownMenuItem asChild>
+          <Link to="/profile" className="flex items-center cursor-pointer">
+            <User className="h-4 w-4 mr-2" />
+            Profile
+          </Link>
+        </DropdownMenuItem>
+        <DropdownMenuItem asChild>
+          <Link to="/orders" className="flex items-center cursor-pointer">
+            <ShoppingBag className="h-4 w-4 mr-2" />
+            My Orders
+          </Link>
+        </DropdownMenuItem>
+        <DropdownMenuSeparator />
+        <DropdownMenuItem 
+          onClick={signOut}
+          className="flex items-center cursor-pointer text-red-600 hover:text-red-700"
+        >
+          <LogOut className="h-4 w-4 mr-2" />
+          Sign Out
+        </DropdownMenuItem>
+      </DropdownMenuContent>
+    </DropdownMenu>
   );
 };
 
