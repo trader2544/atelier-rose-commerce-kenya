@@ -1,18 +1,69 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { BarChart3, Package, Users, MessageSquare, ShoppingBag } from 'lucide-react';
+import { BarChart3, Package, Users, ShoppingBag } from 'lucide-react';
+import { supabase } from '@/integrations/supabase/client';
 import AdminProducts from '@/components/admin/AdminProducts';
 import AdminOrders from '@/components/admin/AdminOrders';
-import AdminMessages from '@/components/admin/AdminMessages';
-import AdminInventory from '@/components/admin/AdminInventory';
 
 const Admin = () => {
   const { user, isAdmin, loading } = useAuth();
   const [activeTab, setActiveTab] = useState('overview');
+  const [stats, setStats] = useState({
+    totalProducts: 0,
+    totalOrders: 0,
+    revenue: 0,
+    recentOrders: []
+  });
+
+  useEffect(() => {
+    if (isAdmin) {
+      fetchStats();
+    }
+  }, [isAdmin]);
+
+  const fetchStats = async () => {
+    try {
+      // Fetch total products
+      const { count: productsCount } = await supabase
+        .from('products')
+        .select('*', { count: 'exact', head: true });
+
+      // Fetch total orders
+      const { count: ordersCount } = await supabase
+        .from('orders')
+        .select('*', { count: 'exact', head: true });
+
+      // Fetch revenue
+      const { data: ordersData } = await supabase
+        .from('orders')
+        .select('total')
+        .eq('status', 'delivered');
+
+      const revenue = ordersData?.reduce((sum, order) => sum + Number(order.total), 0) || 0;
+
+      // Fetch recent orders
+      const { data: recentOrders } = await supabase
+        .from('orders')
+        .select(`
+          *,
+          profiles:user_id (full_name, email)
+        `)
+        .order('created_at', { ascending: false })
+        .limit(5);
+
+      setStats({
+        totalProducts: productsCount || 0,
+        totalOrders: ordersCount || 0,
+        revenue,
+        recentOrders: recentOrders || []
+      });
+    } catch (error) {
+      console.error('Error fetching stats:', error);
+    }
+  };
 
   if (loading) {
     return (
@@ -48,22 +99,16 @@ const Admin = () => {
 
   const tabs = [
     { id: 'overview', label: 'Overview', icon: BarChart3 },
-    { id: 'inventory', label: 'Inventory', icon: Package },
     { id: 'products', label: 'Products', icon: ShoppingBag },
     { id: 'orders', label: 'Orders', icon: Users },
-    { id: 'messages', label: 'Messages', icon: MessageSquare },
   ];
 
   const renderContent = () => {
     switch (activeTab) {
-      case 'inventory':
-        return <AdminInventory />;
       case 'products':
         return <AdminProducts />;
       case 'orders':
         return <AdminOrders />;
-      case 'messages':
-        return <AdminMessages />;
       default:
         return (
           <div className="min-h-screen bg-gradient-to-br from-pink-50/30 via-gray-50/30 to-purple-50/30 relative overflow-hidden">
@@ -78,7 +123,7 @@ const Admin = () => {
                 </p>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
                 <Card className="glassmorphic hover:scale-105 transition-all duration-300">
                   <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                     <CardTitle className="text-sm font-medium text-gray-600">
@@ -87,8 +132,8 @@ const Admin = () => {
                     <Package className="h-4 w-4 text-pink-500" />
                   </CardHeader>
                   <CardContent>
-                    <div className="text-2xl font-bold text-gray-800">24</div>
-                    <p className="text-xs text-gray-500">+2 from last month</p>
+                    <div className="text-2xl font-bold text-gray-800">{stats.totalProducts}</div>
+                    <p className="text-xs text-gray-500">Active products</p>
                   </CardContent>
                 </Card>
 
@@ -100,8 +145,8 @@ const Admin = () => {
                     <Users className="h-4 w-4 text-pink-500" />
                   </CardHeader>
                   <CardContent>
-                    <div className="text-2xl font-bold text-gray-800">156</div>
-                    <p className="text-xs text-gray-500">+12 from last week</p>
+                    <div className="text-2xl font-bold text-gray-800">{stats.totalOrders}</div>
+                    <p className="text-xs text-gray-500">All time orders</p>
                   </CardContent>
                 </Card>
 
@@ -113,65 +158,40 @@ const Admin = () => {
                     <BarChart3 className="h-4 w-4 text-pink-500" />
                   </CardHeader>
                   <CardContent>
-                    <div className="text-2xl font-bold text-gray-800">KSh 245,000</div>
-                    <p className="text-xs text-gray-500">+8% from last month</p>
-                  </CardContent>
-                </Card>
-
-                <Card className="glassmorphic hover:scale-105 transition-all duration-300">
-                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                    <CardTitle className="text-sm font-medium text-gray-600">
-                      Messages
-                    </CardTitle>
-                    <MessageSquare className="h-4 w-4 text-pink-500" />
-                  </CardHeader>
-                  <CardContent>
-                    <div className="text-2xl font-bold text-gray-800">8</div>
-                    <p className="text-xs text-gray-500">3 unread</p>
+                    <div className="text-2xl font-bold text-gray-800">KSh {stats.revenue.toLocaleString()}</div>
+                    <p className="text-xs text-gray-500">Delivered orders</p>
                   </CardContent>
                 </Card>
               </div>
 
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              <div className="grid grid-cols-1 gap-6">
                 <Card className="glassmorphic">
                   <CardHeader>
                     <CardTitle className="text-gray-800">Recent Orders</CardTitle>
                   </CardHeader>
                   <CardContent>
                     <div className="space-y-4">
-                      {[1, 2, 3].map((i) => (
-                        <div key={i} className="flex items-center justify-between p-3 bg-white/50 rounded-lg">
+                      {stats.recentOrders.map((order: any) => (
+                        <div key={order.id} className="flex items-center justify-between p-3 bg-white/50 rounded-lg">
                           <div>
-                            <p className="font-medium text-gray-800">Order #000{i}</p>
-                            <p className="text-sm text-gray-600">Customer Name</p>
+                            <p className="font-medium text-gray-800">Order #{order.id.slice(0, 8)}</p>
+                            <p className="text-sm text-gray-600">{order.profiles?.full_name || order.profiles?.email}</p>
                           </div>
                           <div className="text-right">
-                            <p className="font-semibold text-pink-600">KSh 5,400</p>
-                            <Badge className="bg-green-100 text-green-800">Completed</Badge>
+                            <p className="font-semibold text-pink-600">KSh {Number(order.total).toLocaleString()}</p>
+                            <Badge className={
+                              order.status === 'delivered' ? 'bg-green-100 text-green-800' :
+                              order.status === 'pending' ? 'bg-yellow-100 text-yellow-800' :
+                              'bg-blue-100 text-blue-800'
+                            }>
+                              {order.status}
+                            </Badge>
                           </div>
                         </div>
                       ))}
-                    </div>
-                  </CardContent>
-                </Card>
-
-                <Card className="glassmorphic">
-                  <CardHeader>
-                    <CardTitle className="text-gray-800">Low Stock Alert</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="space-y-4">
-                      {[1, 2, 3].map((i) => (
-                        <div key={i} className="flex items-center justify-between p-3 bg-white/50 rounded-lg">
-                          <div>
-                            <p className="font-medium text-gray-800">Product {i}</p>
-                            <p className="text-sm text-gray-600">Category</p>
-                          </div>
-                          <Badge className="bg-red-100 text-red-800">
-                            {i} left
-                          </Badge>
-                        </div>
-                      ))}
+                      {stats.recentOrders.length === 0 && (
+                        <p className="text-gray-500 text-center py-4">No orders yet</p>
+                      )}
                     </div>
                   </CardContent>
                 </Card>

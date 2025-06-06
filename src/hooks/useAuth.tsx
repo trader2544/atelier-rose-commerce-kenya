@@ -8,6 +8,7 @@ interface AuthContextType {
   session: Session | null;
   profile: any | null;
   isAdmin: boolean;
+  loading: boolean;
   signIn: (email: string, password: string) => Promise<{ error: any }>;
   signUp: (email: string, password: string, fullName: string) => Promise<{ error: any }>;
   signOut: () => Promise<void>;
@@ -20,6 +21,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [session, setSession] = useState<Session | null>(null);
   const [profile, setProfile] = useState<any | null>(null);
   const [isAdmin, setIsAdmin] = useState(false);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
@@ -44,6 +46,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
           setProfile(null);
           setIsAdmin(false);
         }
+        setLoading(false);
       }
     );
 
@@ -51,6 +54,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
       setUser(session?.user ?? null);
+      setLoading(false);
     });
 
     return () => subscription.unsubscribe();
@@ -82,6 +86,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   const signOut = async () => {
     await supabase.auth.signOut();
+    window.location.href = '/';
   };
 
   return (
@@ -90,6 +95,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       session,
       profile,
       isAdmin,
+      loading,
       signIn,
       signUp,
       signOut,
