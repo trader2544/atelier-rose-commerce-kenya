@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { X, User, Mail, Lock, Eye, EyeOff, Phone } from 'lucide-react';
+import { X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -10,16 +10,13 @@ import { toast } from '@/hooks/use-toast';
 interface AuthModalProps {
   isOpen: boolean;
   onClose: () => void;
-  initialMode?: 'signin' | 'signup';
 }
 
-const AuthModal = ({ isOpen, onClose, initialMode = 'signin' }: AuthModalProps) => {
-  const [mode, setMode] = useState<'signin' | 'signup'>(initialMode);
+const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
+  const [isSignUp, setIsSignUp] = useState(false);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [fullName, setFullName] = useState('');
-  const [phone, setPhone] = useState('');
-  const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const { signIn, signUp } = useAuth();
 
@@ -30,25 +27,20 @@ const AuthModal = ({ isOpen, onClose, initialMode = 'signin' }: AuthModalProps) 
     setLoading(true);
 
     try {
-      if (mode === 'signin') {
-        const { error } = await signIn(email, password);
-        if (error) throw error;
-        
-        toast({
-          title: "Welcome back!",
-          description: "You have successfully signed in.",
-        });
-        onClose();
-      } else {
-        const { error } = await signUp(email, password, fullName, phone);
-        if (error) throw error;
-        
+      if (isSignUp) {
+        await signUp(email, password, fullName);
         toast({
           title: "Account created!",
           description: "Please check your email to verify your account.",
         });
-        onClose();
+      } else {
+        await signIn(email, password);
+        toast({
+          title: "Welcome back!",
+          description: "You have successfully signed in.",
+        });
       }
+      onClose();
     } catch (error: any) {
       toast({
         title: "Error",
@@ -61,130 +53,88 @@ const AuthModal = ({ isOpen, onClose, initialMode = 'signin' }: AuthModalProps) 
   };
 
   return (
-    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-      <div className="luxury-card w-full max-w-md">
-        <div className="p-6">
-          <div className="flex items-center justify-between mb-6">
-            <h2 className="text-2xl font-light text-gray-800">
-              {mode === 'signin' ? 'Welcome Back' : 'Create Account'}
-            </h2>
-            <button
-              onClick={onClose}
-              className="text-gray-400 hover:text-gray-600 transition-colors"
-            >
-              <X className="h-5 w-5" />
-            </button>
+    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+      <div className="bg-white/95 backdrop-blur-sm rounded-2xl shadow-2xl w-full max-w-md p-6 relative border border-pink-100">
+        <button
+          onClick={onClose}
+          className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 transition-colors"
+        >
+          <X className="h-5 w-5" />
+        </button>
+
+        <div className="text-center mb-6">
+          <h2 className="text-2xl font-light text-gray-800 mb-2">
+            {isSignUp ? 'Create Account' : 'Welcome Back'}
+          </h2>
+          <p className="text-gray-600 text-sm">
+            {isSignUp 
+              ? 'Join ELSO and discover luxury fashion' 
+              : 'Sign in to your account'
+            }
+          </p>
+        </div>
+
+        <form onSubmit={handleSubmit} className="space-y-4">
+          {isSignUp && (
+            <div>
+              <Label htmlFor="fullName" className="text-gray-700">Full Name</Label>
+              <Input
+                id="fullName"
+                type="text"
+                value={fullName}
+                onChange={(e) => setFullName(e.target.value)}
+                required
+                className="bg-white/70 border-pink-200 focus:border-pink-400"
+                placeholder="Enter your full name"
+              />
+            </div>
+          )}
+
+          <div>
+            <Label htmlFor="email" className="text-gray-700">Email</Label>
+            <Input
+              id="email"
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
+              className="bg-white/70 border-pink-200 focus:border-pink-400"
+              placeholder="Enter your email"
+            />
           </div>
 
-          <form onSubmit={handleSubmit} className="space-y-4">
-            {mode === 'signup' && (
-              <>
-                <div>
-                  <Label htmlFor="fullName" className="text-sm font-medium text-gray-700">
-                    Full Name *
-                  </Label>
-                  <div className="relative">
-                    <User className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
-                    <Input
-                      id="fullName"
-                      type="text"
-                      value={fullName}
-                      onChange={(e) => setFullName(e.target.value)}
-                      className="pl-10 border-rose-200 focus:border-rose-400"
-                      placeholder="Enter your full name"
-                      required={mode === 'signup'}
-                    />
-                  </div>
-                </div>
-
-                <div>
-                  <Label htmlFor="phone" className="text-sm font-medium text-gray-700">
-                    Phone Number *
-                  </Label>
-                  <div className="relative">
-                    <Phone className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
-                    <Input
-                      id="phone"
-                      type="tel"
-                      value={phone}
-                      onChange={(e) => setPhone(e.target.value)}
-                      className="pl-10 border-rose-200 focus:border-rose-400"
-                      placeholder="254712345678"
-                      required={mode === 'signup'}
-                    />
-                  </div>
-                </div>
-              </>
-            )}
-
-            <div>
-              <Label htmlFor="email" className="text-sm font-medium text-gray-700">
-                Email *
-              </Label>
-              <div className="relative">
-                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
-                <Input
-                  id="email"
-                  type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  className="pl-10 border-rose-200 focus:border-rose-400"
-                  placeholder="Enter your email"
-                  required
-                />
-              </div>
-            </div>
-
-            <div>
-              <Label htmlFor="password" className="text-sm font-medium text-gray-700">
-                Password *
-              </Label>
-              <div className="relative">
-                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
-                <Input
-                  id="password"
-                  type={showPassword ? 'text' : 'password'}
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  className="pl-10 pr-10 border-rose-200 focus:border-rose-400"
-                  placeholder="Enter your password"
-                  required
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
-                >
-                  {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                </button>
-              </div>
-            </div>
-
-            <Button
-              type="submit"
-              disabled={loading}
-              className="w-full btn-primary"
-            >
-              {loading
-                ? 'Please wait...'
-                : mode === 'signin'
-                ? 'Sign In'
-                : 'Create Account'
-              }
-            </Button>
-          </form>
-
-          <div className="mt-6 text-center">
-            <p className="text-sm text-gray-600">
-              {mode === 'signin' ? "Don't have an account?" : 'Already have an account?'}
-              <button
-                onClick={() => setMode(mode === 'signin' ? 'signup' : 'signin')}
-                className="ml-1 text-rose-600 hover:text-rose-700 font-medium"
-              >
-                {mode === 'signin' ? 'Sign up' : 'Sign in'}
-              </button>
-            </p>
+          <div>
+            <Label htmlFor="password" className="text-gray-700">Password</Label>
+            <Input
+              id="password"
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+              className="bg-white/70 border-pink-200 focus:border-pink-400"
+              placeholder="Enter your password"
+            />
           </div>
+
+          <Button
+            type="submit"
+            disabled={loading}
+            className="w-full bg-pink-500 hover:bg-pink-600 text-white py-3"
+          >
+            {loading ? 'Please wait...' : (isSignUp ? 'Create Account' : 'Sign In')}
+          </Button>
+        </form>
+
+        <div className="text-center mt-6">
+          <button
+            onClick={() => setIsSignUp(!isSignUp)}
+            className="text-pink-600 hover:text-pink-700 text-sm transition-colors"
+          >
+            {isSignUp 
+              ? 'Already have an account? Sign in' 
+              : "Don't have an account? Sign up"
+            }
+          </button>
         </div>
       </div>
     </div>

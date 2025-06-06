@@ -3,30 +3,59 @@ import React, { useEffect, useState } from 'react';
 import Hero from '@/components/Hero';
 import Newsletter from '@/components/Newsletter';
 import { useInventory } from '@/hooks/useInventory';
+import { useCart } from '@/contexts/CartContext';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Eye, ShoppingCart } from 'lucide-react';
+import { Eye, ShoppingCart, MessageCircle } from 'lucide-react';
+import { toast } from '@/hooks/use-toast';
 
 const Index = () => {
   const { items, loading } = useInventory();
+  const { dispatch } = useCart();
   const [featuredProducts, setFeaturedProducts] = useState<any[]>([]);
 
   useEffect(() => {
     if (items.length > 0) {
-      // Get featured products or random ones if no featured products exist
-      let featured = items.filter(item => item.featured);
-      if (featured.length === 0) {
-        // If no featured products, get random products
-        const shuffled = [...items].sort(() => 0.5 - Math.random());
-        featured = shuffled.slice(0, 3);
-      } else {
-        featured = featured.slice(0, 3);
-      }
+      // Get first 5 products as featured
+      const featured = items.slice(0, 5);
       setFeaturedProducts(featured);
     }
   }, [items]);
+
+  const handleAddToCart = (product: any) => {
+    if (!product.in_stock) {
+      toast({
+        title: "Out of Stock",
+        description: "This item is currently unavailable.",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    dispatch({ type: 'ADD_TO_CART', product: {
+      id: product.id,
+      name: product.name,
+      price: product.price,
+      images: product.images || ['/placeholder.svg'],
+      category: product.category,
+      description: product.description,
+      inStock: product.in_stock
+    }});
+    
+    toast({
+      title: "Added to Cart",
+      description: `${product.name} has been added to your cart.`,
+    });
+  };
+
+  const handleViewProduct = (product: any) => {
+    toast({
+      title: product.name,
+      description: product.description || "Premium quality product with elegant design",
+    });
+  };
 
   const testimonials = [
     {
@@ -60,6 +89,16 @@ const Index = () => {
     <div className="min-h-screen bg-gradient-to-br from-pink-50/30 via-gray-50/30 to-purple-50/30 relative overflow-hidden">
       <div className="love-shapes"></div>
       
+      {/* WhatsApp Float */}
+      <a
+        href="https://wa.me/254745242174"
+        target="_blank"
+        rel="noopener noreferrer"
+        className="fixed bottom-6 right-6 z-50 bg-green-500 hover:bg-green-600 text-white p-3 rounded-full shadow-lg transition-all duration-300 hover:scale-110"
+      >
+        <MessageCircle className="h-6 w-6" />
+      </a>
+      
       <div className="relative z-10">
         {/* Hero Section */}
         <Hero />
@@ -78,7 +117,7 @@ const Index = () => {
 
             {loading ? (
               <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-8 mb-8 sm:mb-12">
-                {[...Array(3)].map((_, i) => (
+                {[...Array(5)].map((_, i) => (
                   <div key={i} className="animate-pulse">
                     <div className="h-48 sm:h-64 bg-gray-200 rounded-lg mb-4"></div>
                     <div className="h-3 sm:h-4 bg-gray-200 rounded w-3/4 mb-2"></div>
@@ -87,8 +126,8 @@ const Index = () => {
                 ))}
               </div>
             ) : (
-              <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-8 mb-8 sm:mb-12">
-                {featuredProducts.map((product) => (
+              <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4 sm:gap-8 mb-8 sm:mb-12">
+                {featuredProducts.map((product, index) => (
                   <div key={product.id} className="animate-fade-in">
                     <Card className="glassmorphic hover:scale-105 transition-all duration-300 group overflow-hidden">
                       <div className="relative aspect-square overflow-hidden">
@@ -105,14 +144,24 @@ const Index = () => {
                           <Badge className="bg-pink-100 text-pink-800 text-xs">Featured</Badge>
                         </div>
                         <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-1 sm:gap-2">
-                          <Button size="sm" className="bg-white/90 text-gray-800 hover:bg-white text-xs sm:text-sm p-2 sm:p-3">
+                          <Button 
+                            size="sm" 
+                            onClick={() => handleViewProduct(product)}
+                            className="bg-white/90 text-gray-800 hover:bg-white text-xs sm:text-sm p-2 sm:p-3"
+                          >
                             <Eye className="h-3 w-3 sm:h-4 sm:w-4 sm:mr-1" />
                             <span className="hidden sm:inline">View</span>
                           </Button>
-                          <Button size="sm" className="bg-pink-500 hover:bg-pink-600 text-white text-xs sm:text-sm p-2 sm:p-3">
-                            <ShoppingCart className="h-3 w-3 sm:h-4 sm:w-4 sm:mr-1" />
-                            <span className="hidden sm:inline">Add</span>
-                          </Button>
+                          <Link to="/cart">
+                            <Button 
+                              size="sm" 
+                              onClick={() => handleAddToCart(product)}
+                              className="bg-pink-500 hover:bg-pink-600 text-white text-xs sm:text-sm p-2 sm:p-3"
+                            >
+                              <ShoppingCart className="h-3 w-3 sm:h-4 sm:w-4 sm:mr-1" />
+                              <span className="hidden sm:inline">Add</span>
+                            </Button>
+                          </Link>
                         </div>
                       </div>
                       
@@ -178,7 +227,7 @@ const Index = () => {
               <div className="relative">
                 <div className="glassmorphic overflow-hidden">
                   <img
-                    src="https://images.unsplash.com/photo-1721322800607-8c38375eef04?auto=format&fit=crop&w=600&q=80"
+                    src="/lovable-uploads/833bfe1d-8774-42d0-ac7f-267e18807202.png"
                     alt="ELSO Lifestyle"
                     className="w-full h-64 sm:h-80 object-cover"
                   />
@@ -212,17 +261,17 @@ const Index = () => {
               ))}
             </div>
 
-            {/* Mobile Testimonials - Faster Infinite Scroll with smaller cards */}
+            {/* Mobile Testimonials - Faster Infinite Scroll */}
             <div className="md:hidden relative overflow-hidden">
-              <div className="flex animate-scroll gap-3" style={{ animationDuration: '8s' }}>
+              <div className="flex animate-scroll gap-2" style={{ animationDuration: '6s' }}>
                 {[...testimonials, ...testimonials].map((testimonial, index) => (
-                  <div key={index} className="glassmorphic text-center p-3 min-w-[200px] flex-shrink-0">
-                    <div className="flex justify-center mb-2">
+                  <div key={index} className="glassmorphic text-center p-2 min-w-[160px] flex-shrink-0">
+                    <div className="flex justify-center mb-1">
                       {[...Array(testimonial.rating)].map((_, i) => (
                         <span key={i} className="text-pink-400 text-xs">★</span>
                       ))}
                     </div>
-                    <p className="text-gray-600 italic mb-2 text-xs line-clamp-3">"{testimonial.text}"</p>
+                    <p className="text-gray-600 italic mb-1 text-xs line-clamp-2">"{testimonial.text}"</p>
                     <p className="font-medium text-gray-800 text-xs">{testimonial.name}</p>
                   </div>
                 ))}

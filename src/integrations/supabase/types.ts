@@ -9,36 +9,6 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
-      inventory: {
-        Row: {
-          category: string
-          description: string
-          id: string
-          images: string | null
-          in_stock: boolean
-          original_price: number
-          price: number
-        }
-        Insert: {
-          category: string
-          description: string
-          id: string
-          images?: string | null
-          in_stock: boolean
-          original_price: number
-          price: number
-        }
-        Update: {
-          category?: string
-          description?: string
-          id?: string
-          images?: string | null
-          in_stock?: boolean
-          original_price?: number
-          price?: number
-        }
-        Relationships: []
-      }
       messages: {
         Row: {
           admin_id: string | null
@@ -225,27 +195,6 @@ export type Database = {
           id?: string
           phone?: string | null
           updated_at?: string | null
-        }
-        Relationships: []
-      }
-      user_roles: {
-        Row: {
-          created_at: string | null
-          id: string
-          role: Database["public"]["Enums"]["user_role"]
-          user_id: string
-        }
-        Insert: {
-          created_at?: string | null
-          id?: string
-          role?: Database["public"]["Enums"]["user_role"]
-          user_id: string
-        }
-        Update: {
-          created_at?: string | null
-          id?: string
-          role?: Database["public"]["Enums"]["user_role"]
-          user_id?: string
         }
         Relationships: []
       }

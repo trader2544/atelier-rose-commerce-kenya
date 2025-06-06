@@ -40,7 +40,7 @@ const About = () => {
           <div className="relative">
             <div className="glassmorphic overflow-hidden">
               <img
-                src="https://images.unsplash.com/photo-1721322800607-8c38375eef04?auto=format&fit=crop&w=600&q=80"
+                src="/lovable-uploads/7fb8d56d-1e3c-4ef0-a38d-ffb85e06747e.png"
                 alt="ELSO Story"
                 className="w-full h-80 object-cover"
               />
@@ -87,15 +87,15 @@ const About = () => {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 text-gray-600">
             <div>
               <h3 className="font-medium mb-2">Phone</h3>
-              <p>+254 712 345 678</p>
+              <p>+254 745 242 174</p>
             </div>
             <div>
               <h3 className="font-medium mb-2">Email</h3>
-              <p>hello@elso.com</p>
+              <p>elsokisumu@gmail.com</p>
             </div>
             <div>
               <h3 className="font-medium mb-2">Location</h3>
-              <p>Nairobi, Kenya</p>
+              <p>Kisumu, Kenya</p>
             </div>
           </div>
         </div>

@@ -2,11 +2,13 @@
 import React, { useState, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { useInventory } from '@/hooks/useInventory';
+import { useCart } from '@/contexts/CartContext';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Eye, ShoppingCart } from 'lucide-react';
+import { toast } from '@/hooks/use-toast';
 
 const Shop = () => {
   const { items, loading } = useInventory();
@@ -76,10 +78,9 @@ const Shop = () => {
   };
 
   const handleViewProduct = (product: any) => {
-    // Create a modal or navigate to product detail
     toast({
       title: product.name,
-      description: product.description || "View more details about this product",
+      description: product.description || "Premium quality product with elegant design",
     });
   };
 
@@ -197,15 +198,17 @@ const Shop = () => {
                     <Eye className="h-3 w-3 sm:h-4 sm:w-4 sm:mr-1" />
                     <span className="hidden sm:inline">View</span>
                   </Button>
-                  <Button 
-                    size="sm" 
-                    onClick={() => handleAddToCart(product)}
-                    className="bg-pink-500 hover:bg-pink-600 text-white text-xs sm:text-sm p-2 sm:p-3" 
-                    disabled={!product.in_stock}
-                  >
-                    <ShoppingCart className="h-3 w-3 sm:h-4 sm:w-4 sm:mr-1" />
-                    <span className="hidden sm:inline">Add</span>
-                  </Button>
+                  <Link to="/cart">
+                    <Button 
+                      size="sm" 
+                      onClick={() => handleAddToCart(product)}
+                      className="bg-pink-500 hover:bg-pink-600 text-white text-xs sm:text-sm p-2 sm:p-3" 
+                      disabled={!product.in_stock}
+                    >
+                      <ShoppingCart className="h-3 w-3 sm:h-4 sm:w-4 sm:mr-1" />
+                      <span className="hidden sm:inline">Add</span>
+                    </Button>
+                  </Link>
                 </div>
               </div>
               

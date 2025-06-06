@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useCart } from '@/contexts/CartContext';
 import { Button } from '@/components/ui/button';
@@ -15,6 +14,7 @@ const Checkout = () => {
   const { user, profile } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
   const [showAuthModal, setShowAuthModal] = useState(false);
+  const [hasPaid, setHasPaid] = useState(false);
   const [address, setAddress] = useState<Address>({
     name: '',
     phone: '',
@@ -35,15 +35,21 @@ const Checkout = () => {
   }, [profile]);
 
   const subtotal = state.total;
+  
   const getShippingCost = () => {
     if (subtotal >= 10000) return 0; // Free delivery for orders over 10k
-    if (address.city?.toLowerCase() === 'kisumu' || address.city?.toLowerCase().includes('kisumu cbd')) {
+    
+    const cityLower = address.city?.toLowerCase() || '';
+    
+    if (cityLower.includes('kisumu cbd') || cityLower === 'kisumu cbd') {
       return 0; // Free delivery within Kisumu CBD
     }
-    if (address.city?.toLowerCase().includes('kisumu')) {
-      return 100; // Ksh 100 for orders outside Kisumu CBD
+    
+    if (cityLower.includes('kisumu') && !cityLower.includes('cbd')) {
+      return 100; // Ksh 100 for orders outside Kisumu CBD but within Kisumu
     }
-    return 375; // Average of 300-450 for outside Kisumu town
+    
+    return 300; // Ksh 300 for outside Kisumu
   };
   
   const shipping = getShippingCost();
@@ -103,21 +109,12 @@ const Checkout = () => {
 
       // Show M-Pesa prompt
       toast({
-        title: "M-Pesa Payment Initiated",
-        description: `Please check your phone ${address.phone} for M-Pesa payment prompt to pay KSh ${total.toLocaleString()}.`,
+        title: "M-Pesa Payment Options",
+        description: `Pay KSh ${total.toLocaleString()} via Paybill 880100, Account: 640011 or use STK Push`,
       });
 
-      // Simulate M-Pesa payment process
-      setTimeout(() => {
-        toast({
-          title: "Order Placed Successfully!",
-          description: "Your order has been placed and you will receive a confirmation shortly. Please check your phone for M-Pesa payment confirmation.",
-        });
-        
-        // Clear cart after successful order
-        dispatch({ type: 'CLEAR_CART' });
-        setIsLoading(false);
-      }, 3000);
+      setHasPaid(true);
+      setIsLoading(false);
 
     } catch (error: any) {
       console.error('Error placing order:', error);
@@ -128,6 +125,21 @@ const Checkout = () => {
       });
       setIsLoading(false);
     }
+  };
+
+  const handleConfirmPayment = () => {
+    const message = `Hi ELSO Team! I have completed payment of KSh ${total.toLocaleString()} for my order. Order details: ${state.items.map(item => `${item.product.name} (Qty: ${item.quantity})`).join(', ')}. Delivery address: ${address.street}, ${address.city}. Please confirm receipt of payment and processing of my order. Thank you!`;
+    
+    const whatsappUrl = `https://wa.me/254745242174?text=${encodeURIComponent(message)}`;
+    window.open(whatsappUrl, '_blank');
+    
+    toast({
+      title: "Order Confirmed!",
+      description: "Thank you! We'll process your order and contact you soon.",
+    });
+    
+    // Clear cart after confirmation
+    dispatch({ type: 'CLEAR_CART' });
   };
 
   if (state.items.length === 0) {
@@ -213,10 +225,13 @@ const Checkout = () => {
                       id="city"
                       value={address.city}
                       onChange={(e) => handleAddressChange('city', e.target.value)}
-                      placeholder="City"
+                      placeholder="e.g., Kisumu CBD, Kisumu, or your city"
                       className="border-pink-200 focus:border-pink-400"
                       disabled={!user}
                     />
+                    <p className="text-xs text-gray-500 mt-1">
+                      Delivery fees: Kisumu CBD (Free), Kisumu (KSh 100), Outside Kisumu (KSh 300)
+                    </p>
                   </div>
 
                   <div>
@@ -254,9 +269,9 @@ const Checkout = () => {
               <div className="p-6">
                 <h2 className="text-xl font-medium text-gray-800 mb-4">Delivery Information</h2>
                 <div className="space-y-2 text-sm text-gray-600">
-                  <p><strong>Free Delivery:</strong> Within Kisumu CBD and orders over KSh 10,000</p>
-                  <p><strong>KSh 100:</strong> Orders outside Kisumu CBD</p>
-                  <p><strong>KSh 300-450:</strong> Outside Kisumu town via Easy Coach Courier</p>
+                  <p><strong>Free Delivery:</strong> Kisumu CBD and orders over KSh 10,000</p>
+                  <p><strong>KSh 100:</strong> Outside Kisumu CBD but within Kisumu</p>
+                  <p><strong>KSh 300:</strong> Outside Kisumu</p>
                 </div>
               </div>
             </div>
@@ -317,24 +332,42 @@ const Checkout = () => {
                       <span className="text-white font-bold text-sm">M</span>
                     </div>
                     <div>
-                      <p className="font-medium text-gray-800">M-Pesa</p>
-                      <p className="text-sm text-gray-600">Pay with M-Pesa mobile money</p>
+                      <p className="font-medium text-gray-800">M-Pesa Payment</p>
+                      <p className="text-sm text-gray-600">Pay via Paybill or STK Push</p>
                       <p className="text-xs text-gray-500">Paybill: 880100, Account: 640011</p>
                     </div>
                   </div>
                 </div>
 
-                <Button
-                  onClick={handleMpesaPayment}
-                  disabled={isLoading || !user}
-                  className="w-full bg-pink-600 hover:bg-pink-700 text-white text-lg py-4 rounded-full"
-                >
-                  {isLoading ? 'Processing Payment...' : `Pay KSh ${total.toLocaleString()} with M-Pesa`}
-                </Button>
+                {!hasPaid ? (
+                  <Button
+                    onClick={handleMpesaPayment}
+                    disabled={isLoading || !user}
+                    className="w-full bg-pink-600 hover:bg-pink-700 text-white text-lg py-4 rounded-full"
+                  >
+                    {isLoading ? 'Processing...' : `Pay KSh ${total.toLocaleString()} with M-Pesa`}
+                  </Button>
+                ) : (
+                  <div className="space-y-4">
+                    <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+                      <p className="text-green-800 font-medium">Payment Instructions Sent!</p>
+                      <p className="text-green-600 text-sm mt-1">
+                        Use Paybill 880100, Account: 640011 to pay KSh {total.toLocaleString()}
+                      </p>
+                    </div>
+                    
+                    <Button
+                      onClick={handleConfirmPayment}
+                      className="w-full bg-green-600 hover:bg-green-700 text-white text-lg py-4 rounded-full"
+                    >
+                      I have Paid - Confirm Order via WhatsApp
+                    </Button>
+                  </div>
+                )}
 
                 <p className="text-xs text-gray-500 text-center mt-4">
                   {user ? 
-                    "You will receive an M-Pesa prompt on your phone to complete the payment. Your order will be confirmed once payment is received." :
+                    "After payment, click 'I have Paid' to confirm your order via WhatsApp." :
                     "Please sign in to continue with your order."
                   }
                 </p>

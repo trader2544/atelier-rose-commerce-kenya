@@ -45,21 +45,21 @@ const Hero = () => {
           </div>
         </div>
 
-        {/* Featured Product Spotlight */}
+        {/* Hero Image */}
         <div className="mt-12 sm:mt-16 animate-fade-in" style={{ animationDelay: '0.5s' }}>
           <div className="glassmorphic max-w-xs sm:max-w-sm mx-auto overflow-hidden">
             <div className="relative">
               <img
-                src="https://images.unsplash.com/photo-1649972904349-6e44c42644a7?auto=format&fit=crop&w=400&q=80"
-                alt="Featured Product"
+                src="/lovable-uploads/0525f4a8-9906-49c9-bb80-531c27a15228.png"
+                alt="ELSO Hero"
                 className="w-full h-36 sm:h-48 object-cover"
               />
               <div className="absolute top-2 sm:top-3 right-2 sm:right-3 bg-pink-500 text-white px-2 sm:px-3 py-1 rounded-full text-xs sm:text-sm font-medium">
-                Featured
+                New Collection
               </div>
             </div>
             <div className="p-3 sm:p-4">
-              <h3 className="text-base sm:text-lg font-medium text-gray-800 mb-2">Rose Gold Collection</h3>
+              <h3 className="text-base sm:text-lg font-medium text-gray-800 mb-2">Luxury Collection</h3>
               <p className="text-gray-600 text-xs sm:text-sm mb-3">Elegant pieces that define luxury</p>
               <Link to="/shop">
                 <Button className="w-full bg-pink-500 hover:bg-pink-600 text-white text-sm">
