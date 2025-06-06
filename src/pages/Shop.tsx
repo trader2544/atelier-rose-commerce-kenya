@@ -71,7 +71,7 @@ const Shop = () => {
   const categories = [...new Set(products.map(product => product.category))];
 
   const handleAddToCart = (product: DatabaseProduct) => {
-    dispatch({ type: 'ADD_ITEM', payload: product });
+    dispatch({ type: 'ADD_TO_CART', payload: product });
     toast({
       title: "Added to cart",
       description: `${product.name} has been added to your cart`,

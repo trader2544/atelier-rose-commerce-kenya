@@ -1,3 +1,4 @@
+
 import Hero from "@/components/Hero";
 import Newsletter from "@/components/Newsletter";
 import { Card, CardContent } from "@/components/ui/card";
@@ -43,7 +44,7 @@ const Index = () => {
   };
 
   const handleAddToCart = (product: DatabaseProduct) => {
-    dispatch({ type: 'ADD_ITEM', payload: product });
+    dispatch({ type: 'ADD_TO_CART', payload: product });
     toast({
       title: "Added to cart",
       description: `${product.name} has been added to your cart`,

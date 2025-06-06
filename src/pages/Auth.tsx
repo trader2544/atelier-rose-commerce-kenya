@@ -19,7 +19,7 @@ const Auth = () => {
 
   useEffect(() => {
     if (user) {
-      navigate('/');
+      navigate('/', { replace: true });
     }
   }, [user, navigate]);
 
@@ -29,6 +29,15 @@ const Auth = () => {
 
     try {
       if (isSignUp) {
+        if (!fullName.trim()) {
+          toast({
+            title: "Error",
+            description: "Please enter your full name",
+            variant: "destructive",
+          });
+          return;
+        }
+        
         const { error } = await signUp(email, password, fullName);
         if (error) throw error;
         
@@ -44,12 +53,12 @@ const Auth = () => {
           title: "Welcome back!",
           description: "You have successfully signed in.",
         });
-        navigate('/');
       }
     } catch (error: any) {
+      console.error('Auth error:', error);
       toast({
         title: "Error",
-        description: error.message,
+        description: error.message || "An error occurred during authentication",
         variant: "destructive",
       });
     } finally {
@@ -69,7 +78,7 @@ const Auth = () => {
       </Link>
 
       <div className="w-full max-w-md">
-        <div className="glassmorphic p-6 sm:p-8">
+        <div className="bg-white/90 backdrop-blur-sm rounded-2xl shadow-xl p-6 sm:p-8 border border-pink-100">
           {/* Header */}
           <div className="text-center mb-6 sm:mb-8">
             <img
@@ -98,7 +107,7 @@ const Auth = () => {
                   type="text"
                   value={fullName}
                   onChange={(e) => setFullName(e.target.value)}
-                  required
+                  required={isSignUp}
                   className="bg-white/70 border-pink-200 focus:border-pink-400 mt-1"
                   placeholder="Enter your full name"
                 />
@@ -128,6 +137,7 @@ const Auth = () => {
                 required
                 className="bg-white/70 border-pink-200 focus:border-pink-400 mt-1"
                 placeholder="Enter your password"
+                minLength={6}
               />
             </div>
 
