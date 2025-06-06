@@ -1,7 +1,7 @@
+
 import React, { useEffect, useState } from 'react';
 import Hero from '@/components/Hero';
 import Newsletter from '@/components/Newsletter';
-import ProductModal from '@/components/ProductModal';
 import { useInventory } from '@/hooks/useInventory';
 import { useCart } from '@/contexts/CartContext';
 import { Link } from 'react-router-dom';
@@ -15,13 +15,11 @@ const Index = () => {
   const { items, loading } = useInventory();
   const { dispatch } = useCart();
   const [featuredProducts, setFeaturedProducts] = useState<any[]>([]);
-  const [selectedProduct, setSelectedProduct] = useState<any>(null);
-  const [isModalOpen, setIsModalOpen] = useState(false);
 
   useEffect(() => {
     if (items.length > 0) {
-      // Get featured products from database
-      const featured = items.filter(item => item.featured).slice(0, 5);
+      // Get first 5 products as featured
+      const featured = items.slice(0, 5);
       setFeaturedProducts(featured);
     }
   }, [items]);
@@ -53,8 +51,10 @@ const Index = () => {
   };
 
   const handleViewProduct = (product: any) => {
-    setSelectedProduct(product);
-    setIsModalOpen(true);
+    toast({
+      title: product.name,
+      description: product.description || "Premium quality product with elegant design",
+    });
   };
 
   const testimonials = [
@@ -152,14 +152,16 @@ const Index = () => {
                             <Eye className="h-3 w-3 sm:h-4 sm:w-4 sm:mr-1" />
                             <span className="hidden sm:inline">View</span>
                           </Button>
-                          <Button 
-                            size="sm" 
-                            onClick={() => handleAddToCart(product)}
-                            className="bg-pink-500 hover:bg-pink-600 text-white text-xs sm:text-sm p-2 sm:p-3"
-                          >
-                            <ShoppingCart className="h-3 w-3 sm:h-4 sm:w-4 sm:mr-1" />
-                            <span className="hidden sm:inline">Add</span>
-                          </Button>
+                          <Link to="/cart">
+                            <Button 
+                              size="sm" 
+                              onClick={() => handleAddToCart(product)}
+                              className="bg-pink-500 hover:bg-pink-600 text-white text-xs sm:text-sm p-2 sm:p-3"
+                            >
+                              <ShoppingCart className="h-3 w-3 sm:h-4 sm:w-4 sm:mr-1" />
+                              <span className="hidden sm:inline">Add</span>
+                            </Button>
+                          </Link>
                         </div>
                       </div>
                       
@@ -281,14 +283,6 @@ const Index = () => {
         {/* Newsletter */}
         <Newsletter />
       </div>
-
-      {/* Product Modal */}
-      <ProductModal
-        product={selectedProduct}
-        isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
-        onAddToCart={handleAddToCart}
-      />
     </div>
   );
 };
