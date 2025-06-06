@@ -7,10 +7,9 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { toast } from '@/hooks/use-toast';
-import { LogOut } from 'lucide-react';
 
 const Profile = () => {
-  const { user, profile, signOut } = useAuth();
+  const { user, profile } = useAuth();
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
     full_name: '',
@@ -23,10 +22,10 @@ const Profile = () => {
       setFormData({
         full_name: profile.full_name || '',
         phone: profile.phone || '',
-        email: user?.email || ''
+        email: profile.email || ''
       });
     }
-  }, [profile, user]);
+  }, [profile]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -62,10 +61,6 @@ const Profile = () => {
     }
   };
 
-  const handleLogout = async () => {
-    await signOut();
-  };
-
   if (!user) {
     return (
       <div className="girly-container pt-20 pb-16 flex items-center justify-center">
@@ -80,17 +75,7 @@ const Profile = () => {
   return (
     <div className="girly-container pt-20 pb-16">
       <div className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between items-center mb-8">
-          <h1 className="page-header">My Profile</h1>
-          <Button 
-            onClick={handleLogout}
-            variant="outline" 
-            className="border-red-200 text-red-600 hover:bg-red-50"
-          >
-            <LogOut className="h-4 w-4 mr-2" />
-            Logout
-          </Button>
-        </div>
+        <h1 className="page-header">My Profile</h1>
         <p className="page-subtitle">Manage your account information and preferences</p>
 
         <Card className="luxury-card sparkle-effect">

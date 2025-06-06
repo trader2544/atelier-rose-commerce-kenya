@@ -1,236 +1,288 @@
 
-import Hero from "@/components/Hero";
-import Newsletter from "@/components/Newsletter";
-import { Card, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { ShoppingCart, Eye, Star } from "lucide-react";
-import { useCart } from "@/contexts/CartContext";
-import { supabase } from "@/integrations/supabase/client";
-import { DatabaseProduct } from "@/types/database";
-import { toast } from "@/hooks/use-toast";
-import { useState, useEffect } from "react";
-import ProductModal from "@/components/ProductModal";
-import { useAuth } from "@/hooks/useAuth";
+import React, { useEffect, useState } from 'react';
+import Hero from '@/components/Hero';
+import Newsletter from '@/components/Newsletter';
+import { useInventory } from '@/hooks/useInventory';
+import { useCart } from '@/contexts/CartContext';
+import { Link } from 'react-router-dom';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Eye, ShoppingCart, MessageCircle } from 'lucide-react';
+import { toast } from '@/hooks/use-toast';
 
 const Index = () => {
-  const [featuredProducts, setFeaturedProducts] = useState<DatabaseProduct[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [selectedProduct, setSelectedProduct] = useState<DatabaseProduct | null>(null);
-  const [isModalOpen, setIsModalOpen] = useState(false);
+  const { items, loading } = useInventory();
   const { dispatch } = useCart();
-  const { user } = useAuth();
+  const [featuredProducts, setFeaturedProducts] = useState<any[]>([]);
 
-  // Fetch products whenever user auth state changes
   useEffect(() => {
-    fetchFeaturedProducts();
-  }, [user]);
-
-  const fetchFeaturedProducts = async () => {
-    try {
-      setLoading(true);
-      const { data, error } = await supabase
-        .from('products')
-        .select('*')
-        .eq('featured', true)
-        .eq('in_stock', true)
-        .order('created_at', { ascending: false })
-        .limit(5);
-
-      if (error) throw error;
-      setFeaturedProducts(data || []);
-    } catch (error) {
-      console.error('Error fetching featured products:', error);
-    } finally {
-      setLoading(false);
+    if (items.length > 0) {
+      // Get first 5 products as featured
+      const featured = items.slice(0, 5);
+      setFeaturedProducts(featured);
     }
-  };
+  }, [items]);
 
-  const handleAddToCart = (product: DatabaseProduct) => {
-    dispatch({ type: 'ADD_TO_CART', product: product });
+  const handleAddToCart = (product: any) => {
+    if (!product.in_stock) {
+      toast({
+        title: "Out of Stock",
+        description: "This item is currently unavailable.",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    dispatch({ type: 'ADD_TO_CART', product: {
+      id: product.id,
+      name: product.name,
+      price: product.price,
+      images: product.images || ['/placeholder.svg'],
+      category: product.category,
+      description: product.description,
+      inStock: product.in_stock
+    }});
+    
     toast({
-      title: "Added to cart",
-      description: `${product.name} has been added to your cart`,
+      title: "Added to Cart",
+      description: `${product.name} has been added to your cart.`,
     });
   };
 
-  const handleViewProduct = (product: DatabaseProduct) => {
-    setSelectedProduct(product);
-    setIsModalOpen(true);
+  const handleViewProduct = (product: any) => {
+    toast({
+      title: product.name,
+      description: product.description || "Premium quality product with elegant design",
+    });
   };
 
-  return (
-    <div className="min-h-screen">
-      <Hero />
-      
-      {/* Featured Collection */}
-      <section className="py-20 bg-gradient-to-br from-pink-50/30 via-gray-50/30 to-purple-50/30 relative overflow-hidden">
-        <div className="love-shapes"></div>
-        <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-16">
-            <h2 className="text-4xl font-light text-gray-800 mb-4">Featured Collection</h2>
-            <p className="text-xl text-gray-600 max-w-2xl mx-auto">
-              Discover our handpicked selection of premium pieces
-            </p>
-          </div>
+  const testimonials = [
+    {
+      name: "Sarah Wanjiku",
+      text: "The quality is amazing and the designs are so elegant. I always feel confident wearing pieces from Elso Atelier.",
+      rating: 5
+    },
+    {
+      name: "Grace Muthoni", 
+      text: "Beautiful handbags that go with everything. The customer service is also exceptional.",
+      rating: 5
+    },
+    {
+      name: "Jennifer Kimani",
+      text: "I love the attention to detail in every piece. Truly luxurious yet accessible.",
+      rating: 5
+    },
+    {
+      name: "Mary Achieng",
+      text: "Fast delivery and authentic products. ELSO never disappoints!",
+      rating: 5
+    },
+    {
+      name: "Agnes Wambui",
+      text: "The jewelry collection is stunning. Perfect for both casual and formal occasions.",
+      rating: 5
+    }
+  ];
 
-          {loading ? (
-            <div className="flex justify-center py-16">
-              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-pink-500"></div>
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-pink-50/30 via-gray-50/30 to-purple-50/30 relative overflow-hidden">
+      <div className="love-shapes"></div>
+      
+      {/* WhatsApp Float */}
+      <a
+        href="https://wa.me/254745242174"
+        target="_blank"
+        rel="noopener noreferrer"
+        className="fixed bottom-6 right-6 z-50 bg-green-500 hover:bg-green-600 text-white p-3 rounded-full shadow-lg transition-all duration-300 hover:scale-110"
+      >
+        <MessageCircle className="h-6 w-6" />
+      </a>
+      
+      <div className="relative z-10">
+        {/* Hero Section */}
+        <Hero />
+
+        {/* Featured Products */}
+        <section className="py-12 sm:py-16">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="text-center mb-8 sm:mb-12">
+              <h2 className="text-2xl sm:text-3xl md:text-4xl font-light text-gray-800 mb-4">
+                Featured Collection
+              </h2>
+              <p className="text-sm sm:text-base text-gray-600 max-w-2xl mx-auto">
+                Discover our hand-picked selection of the season's most elegant pieces
+              </p>
             </div>
-          ) : featuredProducts.length > 0 ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-              {featuredProducts.map((product) => (
-                <Card key={product.id} className="group overflow-hidden glassmorphic hover:scale-105 transition-all duration-300">
-                  <div className="relative overflow-hidden">
-                    <img
-                      src={product.images && product.images.length > 0 ? product.images[0] : '/placeholder.svg'}
-                      alt={product.name}
-                      className="w-full h-64 object-cover group-hover:scale-110 transition-transform duration-300"
-                      onError={(e) => {
-                        const target = e.target as HTMLImageElement;
-                        target.src = '/placeholder.svg';
-                      }}
-                    />
-                    <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center gap-2">
-                      <Button
-                        size="sm"
-                        variant="secondary"
-                        onClick={() => handleViewProduct(product)}
-                        className="bg-white/90 hover:bg-white text-gray-800"
-                      >
-                        <Eye className="h-4 w-4" />
-                      </Button>
-                      <Button
-                        size="sm"
-                        onClick={() => handleAddToCart(product)}
-                        className="bg-pink-500 hover:bg-pink-600 text-white"
-                      >
-                        <ShoppingCart className="h-4 w-4" />
-                      </Button>
-                    </div>
+
+            {loading ? (
+              <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-8 mb-8 sm:mb-12">
+                {[...Array(5)].map((_, i) => (
+                  <div key={i} className="animate-pulse">
+                    <div className="h-48 sm:h-64 bg-gray-200 rounded-lg mb-4"></div>
+                    <div className="h-3 sm:h-4 bg-gray-200 rounded w-3/4 mb-2"></div>
+                    <div className="h-3 sm:h-4 bg-gray-200 rounded w-1/2"></div>
                   </div>
-                  <CardContent className="p-6">
-                    <h3 className="text-lg font-medium text-gray-800 mb-2">{product.name}</h3>
-                    <Badge className="bg-pink-100 text-pink-800 mb-3">{product.category}</Badge>
-                    
-                    <div className="flex items-center mb-3">
-                      {[...Array(5)].map((_, i) => (
-                        <Star 
-                          key={i} 
-                          className={`h-4 w-4 ${i < (product.rating || 0) ? 'text-yellow-400 fill-current' : 'text-gray-300'}`} 
+                ))}
+              </div>
+            ) : (
+              <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4 sm:gap-8 mb-8 sm:mb-12">
+                {featuredProducts.map((product, index) => (
+                  <div key={product.id} className="animate-fade-in">
+                    <Card className="glassmorphic hover:scale-105 transition-all duration-300 group overflow-hidden">
+                      <div className="relative aspect-square overflow-hidden">
+                        <img
+                          src={product.images && product.images.length > 0 ? product.images[0] : '/placeholder.svg'}
+                          alt={product.name}
+                          className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
+                          onError={(e) => {
+                            const target = e.target as HTMLImageElement;
+                            target.src = '/placeholder.svg';
+                          }}
                         />
-                      ))}
-                      <span className="text-sm text-gray-600 ml-2">
-                        ({product.reviews || 0})
-                      </span>
-                    </div>
-                    
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <span className="text-xl font-semibold text-pink-600">
-                          KSh {product.price.toLocaleString()}
-                        </span>
-                        {product.original_price && product.original_price > product.price && (
-                          <span className="text-sm text-gray-500 line-through ml-2">
-                            KSh {product.original_price.toLocaleString()}
-                          </span>
-                        )}
+                        <div className="absolute top-1 sm:top-2 right-1 sm:right-2">
+                          <Badge className="bg-pink-100 text-pink-800 text-xs">Featured</Badge>
+                        </div>
+                        <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-1 sm:gap-2">
+                          <Button 
+                            size="sm" 
+                            onClick={() => handleViewProduct(product)}
+                            className="bg-white/90 text-gray-800 hover:bg-white text-xs sm:text-sm p-2 sm:p-3"
+                          >
+                            <Eye className="h-3 w-3 sm:h-4 sm:w-4 sm:mr-1" />
+                            <span className="hidden sm:inline">View</span>
+                          </Button>
+                          <Link to="/cart">
+                            <Button 
+                              size="sm" 
+                              onClick={() => handleAddToCart(product)}
+                              className="bg-pink-500 hover:bg-pink-600 text-white text-xs sm:text-sm p-2 sm:p-3"
+                            >
+                              <ShoppingCart className="h-3 w-3 sm:h-4 sm:w-4 sm:mr-1" />
+                              <span className="hidden sm:inline">Add</span>
+                            </Button>
+                          </Link>
+                        </div>
                       </div>
-                    </div>
-                  </CardContent>
-                </Card>
+                      
+                      <CardContent className="p-3 sm:p-4">
+                        <h3 className="font-medium text-gray-800 mb-1 sm:mb-2 text-sm sm:text-base">
+                          {product.name}
+                        </h3>
+                        {product.description && (
+                          <p className="text-xs text-gray-600 mb-2 sm:mb-3 line-clamp-2 hidden sm:block">
+                            {product.description}
+                          </p>
+                        )}
+                        <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-1 sm:gap-0">
+                          <span className="text-sm sm:text-lg font-semibold text-pink-600">
+                            KSh {product.price.toLocaleString()}
+                          </span>
+                          <Badge className="bg-green-100 text-green-800 text-xs w-fit">
+                            {product.in_stock ? 'In Stock' : 'Out of Stock'}
+                          </Badge>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            <div className="text-center">
+              <Link to="/shop">
+                <Button className="bg-pink-500 hover:bg-pink-600 text-white text-sm sm:text-lg px-6 sm:px-8 py-3 sm:py-4">
+                  View All Products
+                </Button>
+              </Link>
+            </div>
+          </div>
+        </section>
+
+        {/* About Section */}
+        <section className="py-12 sm:py-16">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 sm:gap-12 items-center">
+              <div className="animate-fade-in">
+                <h2 className="text-2xl sm:text-3xl md:text-4xl font-light text-gray-800 mb-4 sm:mb-6">
+                  Crafted with Love, Designed for You
+                </h2>
+                <p className="text-sm sm:text-base text-gray-600 leading-relaxed mb-4 sm:mb-6">
+                  At ELSO, we believe every woman deserves to feel extraordinary. 
+                  Our collection combines timeless elegance with contemporary style, 
+                  creating pieces that celebrate your unique beauty and confidence.
+                </p>
+                <p className="text-sm sm:text-base text-gray-600 leading-relaxed mb-6 sm:mb-8">
+                  From our signature handbags to our exquisite jewelry, each item is 
+                  carefully selected to enhance your personal style and complement your 
+                  everyday moments with a touch of luxury.
+                </p>
+                <Link to="/about">
+                  <Button className="bg-gray-600 hover:bg-gray-700 text-white text-sm sm:text-base">
+                    Learn More About Us
+                  </Button>
+                </Link>
+              </div>
+              
+              <div className="relative">
+                <div className="glassmorphic overflow-hidden">
+                  <img
+                    src="/lovable-uploads/833bfe1d-8774-42d0-ac7f-267e18807202.png"
+                    alt="ELSO Lifestyle"
+                    className="w-full h-64 sm:h-80 object-cover"
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* Testimonials */}
+        <section className="py-12 sm:py-16">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="text-center mb-8 sm:mb-12">
+              <h2 className="text-2xl sm:text-3xl md:text-4xl font-light text-gray-800 mb-4">
+                What Our Customers Say
+              </h2>
+            </div>
+
+            {/* Desktop Testimonials */}
+            <div className="hidden md:grid grid-cols-1 md:grid-cols-3 gap-8">
+              {testimonials.slice(0, 3).map((testimonial, index) => (
+                <div key={index} className="glassmorphic text-center animate-fade-in p-6" style={{ animationDelay: `${index * 0.2}s` }}>
+                  <div className="flex justify-center mb-4">
+                    {[...Array(testimonial.rating)].map((_, i) => (
+                      <span key={i} className="text-pink-400 text-lg">★</span>
+                    ))}
+                  </div>
+                  <p className="text-gray-600 italic mb-4">"{testimonial.text}"</p>
+                  <p className="font-medium text-gray-800">{testimonial.name}</p>
+                </div>
               ))}
             </div>
-          ) : (
-            <div className="text-center py-16">
-              <p className="text-gray-600">No featured products available at the moment.</p>
+
+            {/* Mobile Testimonials - Faster Infinite Scroll */}
+            <div className="md:hidden relative overflow-hidden">
+              <div className="flex animate-scroll gap-2" style={{ animationDuration: '6s' }}>
+                {[...testimonials, ...testimonials].map((testimonial, index) => (
+                  <div key={index} className="glassmorphic text-center p-2 min-w-[160px] flex-shrink-0">
+                    <div className="flex justify-center mb-1">
+                      {[...Array(testimonial.rating)].map((_, i) => (
+                        <span key={i} className="text-pink-400 text-xs">★</span>
+                      ))}
+                    </div>
+                    <p className="text-gray-600 italic mb-1 text-xs line-clamp-2">"{testimonial.text}"</p>
+                    <p className="font-medium text-gray-800 text-xs">{testimonial.name}</p>
+                  </div>
+                ))}
+              </div>
             </div>
-          )}
-        </div>
-      </section>
-
-      {/* Testimonials Section */}
-      <section className="py-16 bg-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl font-light text-gray-800 mb-4">
-              What Our Customers Say
-            </h2>
-            <p className="text-xl text-gray-600">
-              Real stories from real people who love ELSO
-            </p>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            <Card className="glassmorphic">
-              <CardContent className="p-6">
-                <div className="mb-4">
-                  <div className="flex items-center">
-                    {[...Array(5)].map((_, i) => (
-                      <Star key={i} className="h-4 w-4 text-yellow-400 fill-current" />
-                    ))}
-                  </div>
-                </div>
-                <p className="text-gray-700 mb-4">
-                  "I absolutely love the handbag I purchased from ELSO. The
-                  quality is outstanding, and it's even more beautiful in
-                  person. I get compliments every time I use it!"
-                </p>
-                <p className="text-sm text-gray-500">
-                  - Jane Doe, Nairobi
-                </p>
-              </CardContent>
-            </Card>
-            <Card className="glassmorphic">
-              <CardContent className="p-6">
-                <div className="mb-4">
-                  <div className="flex items-center">
-                    {[...Array(5)].map((_, i) => (
-                      <Star key={i} className="h-4 w-4 text-yellow-400 fill-current" />
-                    ))}
-                  </div>
-                </div>
-                <p className="text-gray-700 mb-4">
-                  "The jewelry from ELSO is simply stunning. I bought a necklace
-                  for a special occasion, and it was the perfect touch of
-                  elegance. I will definitely be shopping here again."
-                </p>
-                <p className="text-sm text-gray-500">
-                  - Alice Smith, Mombasa
-                </p>
-              </CardContent>
-            </Card>
-            <Card className="glassmorphic">
-              <CardContent className="p-6">
-                <div className="mb-4">
-                  <div className="flex items-center">
-                    {[...Array(5)].map((_, i) => (
-                      <Star key={i} className="h-4 w-4 text-yellow-400 fill-current" />
-                    ))}
-                  </div>
-                </div>
-                <p className="text-gray-700 mb-4">
-                  "ELSO has become my go-to for fashion accessories. Their
-                  selection is unique, and the customer service is
-                  exceptional. I highly recommend them!"
-                </p>
-                <p className="text-sm text-gray-500">
-                  - Sarah Johnson, Kisumu
-                </p>
-              </CardContent>
-            </Card>
-          </div>
-        </div>
-      </section>
-      
-      <Newsletter />
+        </section>
 
-      <ProductModal
-        product={selectedProduct}
-        isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
-        onAddToCart={handleAddToCart}
-      />
+        {/* Newsletter */}
+        <Newsletter />
+      </div>
     </div>
   );
 };
