@@ -11,6 +11,7 @@ import { DatabaseProduct } from "@/types/database";
 import { toast } from "@/hooks/use-toast";
 import { useState, useEffect } from "react";
 import ProductModal from "@/components/ProductModal";
+import { useAuth } from "@/hooks/useAuth";
 
 const Index = () => {
   const [featuredProducts, setFeaturedProducts] = useState<DatabaseProduct[]>([]);
@@ -18,10 +19,12 @@ const Index = () => {
   const [selectedProduct, setSelectedProduct] = useState<DatabaseProduct | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const { dispatch } = useCart();
+  const { user } = useAuth();
 
+  // Fetch products whenever user auth state changes
   useEffect(() => {
     fetchFeaturedProducts();
-  }, []);
+  }, [user]);
 
   const fetchFeaturedProducts = async () => {
     try {
@@ -44,7 +47,7 @@ const Index = () => {
   };
 
   const handleAddToCart = (product: DatabaseProduct) => {
-    dispatch({ type: 'ADD_TO_CART', payload: product });
+    dispatch({ type: 'ADD_TO_CART', product: product });
     toast({
       title: "Added to cart",
       description: `${product.name} has been added to your cart`,

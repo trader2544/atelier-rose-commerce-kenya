@@ -11,6 +11,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { DatabaseProduct } from '@/types/database';
 import { toast } from '@/hooks/use-toast';
 import ProductModal from '@/components/ProductModal';
+import { useAuth } from '@/hooks/useAuth';
 
 const Shop = () => {
   const [products, setProducts] = useState<DatabaseProduct[]>([]);
@@ -21,10 +22,12 @@ const Shop = () => {
   const [selectedProduct, setSelectedProduct] = useState<DatabaseProduct | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const { dispatch } = useCart();
+  const { user } = useAuth();
 
+  // Fetch products whenever user auth state changes
   useEffect(() => {
     fetchProducts();
-  }, []);
+  }, [user]);
 
   const fetchProducts = async () => {
     try {
@@ -71,7 +74,7 @@ const Shop = () => {
   const categories = [...new Set(products.map(product => product.category))];
 
   const handleAddToCart = (product: DatabaseProduct) => {
-    dispatch({ type: 'ADD_TO_CART', payload: product });
+    dispatch({ type: 'ADD_TO_CART', product: product });
     toast({
       title: "Added to cart",
       description: `${product.name} has been added to your cart`,

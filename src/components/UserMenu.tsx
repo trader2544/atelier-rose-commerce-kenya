@@ -10,6 +10,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useAuth } from '@/hooks/useAuth';
 
 const UserMenu = () => {
@@ -39,11 +40,23 @@ const UserMenu = () => {
     }
   };
 
+  const getInitials = () => {
+    if (profile?.full_name) {
+      return profile.full_name.split(' ').map((n: string) => n[0]).join('').toUpperCase();
+    }
+    return user.email?.charAt(0).toUpperCase() || 'U';
+  };
+
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="outline" size="sm" className="border-pink-200 hover:bg-pink-50 p-2">
-          <User className="h-4 w-4" />
+        <Button variant="ghost" className="relative h-8 w-8 rounded-full">
+          <Avatar className="h-8 w-8">
+            <AvatarImage src={profile?.avatar_url} alt={profile?.full_name || user.email || ''} />
+            <AvatarFallback className="bg-pink-100 text-pink-800">
+              {getInitials()}
+            </AvatarFallback>
+          </Avatar>
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent 
