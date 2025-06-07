@@ -1,21 +1,6 @@
 
 import React, { createContext, useContext, useReducer, ReactNode } from 'react';
-
-export interface Product {
-  id: string;
-  name: string;
-  price: number;
-  images: string[];
-  category: string;
-  description?: string;
-  original_price?: number;
-  in_stock: boolean;
-  featured: boolean;
-  created_at: string;
-  rating: number;
-  reviews: number;
-  updated_at: string;
-}
+import { Product } from '@/types/product';
 
 interface CartItem {
   id: string;

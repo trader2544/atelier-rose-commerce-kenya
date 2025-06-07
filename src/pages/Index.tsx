@@ -6,61 +6,19 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ShoppingCart, Eye, Star } from "lucide-react";
 import { useCart } from "@/contexts/CartContext";
-import { supabase } from "@/integrations/supabase/client";
+import { useFeaturedProducts } from "@/hooks/useProducts";
 import { toast } from "@/hooks/use-toast";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import ProductModal from "@/components/ProductModal";
-import { useAuth } from "@/hooks/useAuth";
-
-interface DatabaseProduct {
-  id: string;
-  name: string;
-  price: number;
-  images: string[];
-  category: string;
-  description?: string;
-  original_price?: number;
-  in_stock: boolean;
-  featured: boolean;
-  created_at: string;
-  rating?: number;
-  reviews?: number;
-  updated_at: string;
-}
+import { Product } from "@/types/product";
 
 const Index = () => {
-  const [featuredProducts, setFeaturedProducts] = useState<DatabaseProduct[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [selectedProduct, setSelectedProduct] = useState<DatabaseProduct | null>(null);
+  const { products: featuredProducts, loading } = useFeaturedProducts();
+  const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const { dispatch } = useCart();
-  const { user } = useAuth();
 
-  useEffect(() => {
-    fetchFeaturedProducts();
-  }, [user]);
-
-  const fetchFeaturedProducts = async () => {
-    try {
-      setLoading(true);
-      const { data, error } = await supabase
-        .from('products')
-        .select('*')
-        .eq('featured', true)
-        .eq('in_stock', true)
-        .order('created_at', { ascending: false })
-        .limit(5);
-
-      if (error) throw error;
-      setFeaturedProducts(data || []);
-    } catch (error) {
-      console.error('Error fetching featured products:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleAddToCart = (product: DatabaseProduct) => {
+  const handleAddToCart = (product: Product) => {
     dispatch({ type: 'ADD_TO_CART', payload: product });
     toast({
       title: "Added to cart",
@@ -68,7 +26,7 @@ const Index = () => {
     });
   };
 
-  const handleViewProduct = (product: DatabaseProduct) => {
+  const handleViewProduct = (product: Product) => {
     setSelectedProduct(product);
     setIsModalOpen(true);
   };
@@ -132,11 +90,11 @@ const Index = () => {
                       {[...Array(5)].map((_, i) => (
                         <Star 
                           key={i} 
-                          className={`h-4 w-4 ${i < (product.rating || 0) ? 'text-yellow-400 fill-current' : 'text-gray-300'}`} 
+                          className={`h-4 w-4 ${i < product.rating ? 'text-yellow-400 fill-current' : 'text-gray-300'}`} 
                         />
                       ))}
                       <span className="text-sm text-gray-600 ml-2">
-                        ({product.reviews || 0})
+                        ({product.reviews})
                       </span>
                     </div>
                     

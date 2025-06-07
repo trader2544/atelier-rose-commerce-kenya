@@ -7,72 +7,19 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { useCart } from '@/contexts/CartContext';
-import { supabase } from '@/integrations/supabase/client';
+import { useProducts } from '@/hooks/useProducts';
+import { Product } from '@/types/product';
 import { toast } from '@/hooks/use-toast';
 import ProductModal from '@/components/ProductModal';
 
-interface DatabaseProduct {
-  id: string;
-  name: string;
-  price: number;
-  images: string[];
-  category: string;
-  description?: string;
-  original_price?: number;
-  in_stock: boolean;
-  featured: boolean;
-  created_at: string;
-  rating: number;
-  reviews: number;
-  updated_at: string;
-}
-
 const Shop = () => {
-  const [products, setProducts] = useState<DatabaseProduct[]>([]);
-  const [filteredProducts, setFilteredProducts] = useState<DatabaseProduct[]>([]);
+  const { products, loading } = useProducts();
+  const [filteredProducts, setFilteredProducts] = useState<Product[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('all');
-  const [loading, setLoading] = useState(true);
-  const [selectedProduct, setSelectedProduct] = useState<DatabaseProduct | null>(null);
+  const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const { dispatch } = useCart();
-
-  const fetchProducts = async () => {
-    try {
-      setLoading(true);
-      const { data, error } = await supabase
-        .from('products')
-        .select('*')
-        .eq('in_stock', true)
-        .order('created_at', { ascending: false });
-
-      if (error) {
-        console.error('Error fetching products:', error);
-        toast({
-          title: "Error",
-          description: "Failed to load products. Please try again.",
-          variant: "destructive",
-        });
-        return;
-      }
-
-      setProducts(data || []);
-      setFilteredProducts(data || []);
-    } catch (error) {
-      console.error('Error fetching products:', error);
-      toast({
-        title: "Error",
-        description: "Failed to load products. Please check your connection.",
-        variant: "destructive",
-      });
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    fetchProducts();
-  }, []);
 
   useEffect(() => {
     let filtered = products;
@@ -94,7 +41,7 @@ const Shop = () => {
 
   const categories = [...new Set(products.map(product => product.category))];
 
-  const handleAddToCart = (product: DatabaseProduct) => {
+  const handleAddToCart = (product: Product) => {
     dispatch({ type: 'ADD_TO_CART', payload: product });
     toast({
       title: "Added to cart",
@@ -102,7 +49,7 @@ const Shop = () => {
     });
   };
 
-  const handleViewProduct = (product: DatabaseProduct) => {
+  const handleViewProduct = (product: Product) => {
     setSelectedProduct(product);
     setIsModalOpen(true);
   };
