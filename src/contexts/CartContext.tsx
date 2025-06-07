@@ -26,7 +26,6 @@ interface CartItem {
 interface CartState {
   items: CartItem[];
   total: number;
-  itemCount: number;
 }
 
 type CartAction = 
@@ -50,8 +49,7 @@ const cartReducer = (state: CartState, action: CartAction): CartState => {
         return {
           ...state,
           items: updatedItems,
-          total: updatedItems.reduce((sum, item) => sum + (item.product.price * item.quantity), 0),
-          itemCount: updatedItems.reduce((sum, item) => sum + item.quantity, 0)
+          total: updatedItems.reduce((sum, item) => sum + (item.product.price * item.quantity), 0)
         };
       }
       
@@ -60,8 +58,7 @@ const cartReducer = (state: CartState, action: CartAction): CartState => {
       return {
         ...state,
         items: newItems,
-        total: newItems.reduce((sum, item) => sum + (item.product.price * item.quantity), 0),
-        itemCount: newItems.reduce((sum, item) => sum + item.quantity, 0)
+        total: newItems.reduce((sum, item) => sum + (item.product.price * item.quantity), 0)
       };
     }
     
@@ -71,8 +68,7 @@ const cartReducer = (state: CartState, action: CartAction): CartState => {
       return {
         ...state,
         items: updatedItems,
-        total: updatedItems.reduce((sum, item) => sum + (item.product.price * item.quantity), 0),
-        itemCount: updatedItems.reduce((sum, item) => sum + item.quantity, 0)
+        total: updatedItems.reduce((sum, item) => sum + (item.product.price * item.quantity), 0)
       };
     }
     
@@ -83,8 +79,7 @@ const cartReducer = (state: CartState, action: CartAction): CartState => {
         return {
           ...state,
           items: updatedItems,
-          total: updatedItems.reduce((sum, item) => sum + (item.product.price * item.quantity), 0),
-          itemCount: updatedItems.reduce((sum, item) => sum + item.quantity, 0)
+          total: updatedItems.reduce((sum, item) => sum + (item.product.price * item.quantity), 0)
         };
       }
       
@@ -97,16 +92,14 @@ const cartReducer = (state: CartState, action: CartAction): CartState => {
       return {
         ...state,
         items: updatedItems,
-        total: updatedItems.reduce((sum, item) => sum + (item.product.price * item.quantity), 0),
-        itemCount: updatedItems.reduce((sum, item) => sum + item.quantity, 0)
+        total: updatedItems.reduce((sum, item) => sum + (item.product.price * item.quantity), 0)
       };
     }
     
     case 'CLEAR_CART':
       return {
         items: [],
-        total: 0,
-        itemCount: 0
+        total: 0
       };
     
     default:
@@ -124,8 +117,7 @@ const CartContext = createContext<CartContextType | undefined>(undefined);
 export const CartProvider = ({ children }: { children: ReactNode }) => {
   const [state, dispatch] = useReducer(cartReducer, {
     items: [],
-    total: 0,
-    itemCount: 0
+    total: 0
   });
 
   return (
