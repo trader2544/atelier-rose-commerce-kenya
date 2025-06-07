@@ -8,6 +8,14 @@ import { Badge } from '@/components/ui/badge';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
 
+interface ShippingAddress {
+  name: string;
+  phone: string;
+  street: string;
+  city: string;
+  delivery_location?: string;
+}
+
 interface Order {
   id: string;
   user_id: string;
@@ -15,7 +23,7 @@ interface Order {
   status: string;
   payment_status: string;
   payment_method: string;
-  shipping_address: any;
+  shipping_address: ShippingAddress;
   created_at: string;
   customer_name?: string;
   customer_email?: string;
@@ -81,11 +89,14 @@ const AdminOrders = () => {
       // Combine orders with customer data
       const enrichedOrders = (ordersData || []).map(order => {
         const customerProfile = customerProfiles.find(profile => profile.id === order.user_id);
+        const shippingAddress = order.shipping_address as ShippingAddress;
+        
         return {
           ...order,
-          customer_name: customerProfile?.full_name || order.shipping_address?.name || 'Unknown',
+          shipping_address: shippingAddress,
+          customer_name: customerProfile?.full_name || shippingAddress?.name || 'Unknown',
           customer_email: customerProfile?.email || 'Unknown',
-          customer_phone: customerProfile?.phone || order.shipping_address?.phone || 'Unknown'
+          customer_phone: customerProfile?.phone || shippingAddress?.phone || 'Unknown'
         };
       });
 

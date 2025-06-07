@@ -11,7 +11,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
 import ProductModal from '@/components/ProductModal';
 
-interface Product {
+interface DatabaseProduct {
   id: string;
   name: string;
   price: number;
@@ -20,15 +20,20 @@ interface Product {
   description?: string;
   original_price?: number;
   in_stock: boolean;
+  featured: boolean;
+  created_at: string;
+  rating: number;
+  reviews: number;
+  updated_at: string;
 }
 
 const Shop = () => {
-  const [products, setProducts] = useState<Product[]>([]);
-  const [filteredProducts, setFilteredProducts] = useState<Product[]>([]);
+  const [products, setProducts] = useState<DatabaseProduct[]>([]);
+  const [filteredProducts, setFilteredProducts] = useState<DatabaseProduct[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [loading, setLoading] = useState(true);
-  const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
+  const [selectedProduct, setSelectedProduct] = useState<DatabaseProduct | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const { dispatch } = useCart();
 
@@ -89,7 +94,7 @@ const Shop = () => {
 
   const categories = [...new Set(products.map(product => product.category))];
 
-  const handleAddToCart = (product: Product) => {
+  const handleAddToCart = (product: DatabaseProduct) => {
     dispatch({ type: 'ADD_TO_CART', payload: product });
     toast({
       title: "Added to cart",
@@ -97,7 +102,7 @@ const Shop = () => {
     });
   };
 
-  const handleViewProduct = (product: Product) => {
+  const handleViewProduct = (product: DatabaseProduct) => {
     setSelectedProduct(product);
     setIsModalOpen(true);
   };

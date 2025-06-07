@@ -8,7 +8,7 @@ import { Badge } from '@/components/ui/badge';
 import { toast } from '@/hooks/use-toast';
 import ProductForm from './ProductForm';
 
-interface Product {
+interface DatabaseProduct {
   id: string;
   name: string;
   price: number;
@@ -19,12 +19,15 @@ interface Product {
   in_stock: boolean;
   featured: boolean;
   created_at: string;
+  rating: number;
+  reviews: number;
+  updated_at: string;
 }
 
 const AdminProducts = () => {
-  const [products, setProducts] = useState<Product[]>([]);
+  const [products, setProducts] = useState<DatabaseProduct[]>([]);
   const [showForm, setShowForm] = useState(false);
-  const [editingProduct, setEditingProduct] = useState<Product | null>(null);
+  const [editingProduct, setEditingProduct] = useState<DatabaseProduct | null>(null);
   const [loading, setLoading] = useState(true);
 
   const fetchProducts = async () => {

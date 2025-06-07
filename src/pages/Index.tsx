@@ -12,7 +12,7 @@ import { useState, useEffect } from "react";
 import ProductModal from "@/components/ProductModal";
 import { useAuth } from "@/hooks/useAuth";
 
-interface Product {
+interface DatabaseProduct {
   id: string;
   name: string;
   price: number;
@@ -22,14 +22,16 @@ interface Product {
   original_price?: number;
   in_stock: boolean;
   featured: boolean;
+  created_at: string;
   rating?: number;
   reviews?: number;
+  updated_at: string;
 }
 
 const Index = () => {
-  const [featuredProducts, setFeaturedProducts] = useState<Product[]>([]);
+  const [featuredProducts, setFeaturedProducts] = useState<DatabaseProduct[]>([]);
   const [loading, setLoading] = useState(true);
-  const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
+  const [selectedProduct, setSelectedProduct] = useState<DatabaseProduct | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const { dispatch } = useCart();
   const { user } = useAuth();
@@ -58,7 +60,7 @@ const Index = () => {
     }
   };
 
-  const handleAddToCart = (product: Product) => {
+  const handleAddToCart = (product: DatabaseProduct) => {
     dispatch({ type: 'ADD_TO_CART', payload: product });
     toast({
       title: "Added to cart",
@@ -66,7 +68,7 @@ const Index = () => {
     });
   };
 
-  const handleViewProduct = (product: Product) => {
+  const handleViewProduct = (product: DatabaseProduct) => {
     setSelectedProduct(product);
     setIsModalOpen(true);
   };
