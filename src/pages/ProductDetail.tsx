@@ -39,24 +39,7 @@ const ProductDetail = () => {
       return;
     }
     
-    // Convert to the format expected by CartContext
-    const cartProduct = {
-      id: product.id,
-      name: product.name,
-      price: product.price,
-      images: product.images,
-      category: product.category,
-      description: product.description,
-      original_price: product.originalPrice,
-      in_stock: product.inStock,
-      featured: product.featured || false,
-      created_at: new Date().toISOString(),
-      rating: product.rating || 0,
-      reviews: product.reviews || 0,
-      updated_at: new Date().toISOString()
-    };
-    
-    dispatch({ type: 'ADD_TO_CART', payload: cartProduct });
+    dispatch({ type: 'ADD_TO_CART', product });
     toast({
       title: "Added to Cart",
       description: `${product.name} has been added to your cart.`,

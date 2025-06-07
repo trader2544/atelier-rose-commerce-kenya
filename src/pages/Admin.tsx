@@ -1,27 +1,116 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { BarChart3, Package, Users, ShoppingBag } from 'lucide-react';
-import { useProducts } from '@/hooks/useProducts';
-import { useAdminOrders } from '@/hooks/useOrders';
+import { supabase } from '@/integrations/supabase/client';
 import AdminProducts from '@/components/admin/AdminProducts';
 import AdminOrders from '@/components/admin/AdminOrders';
 
 const Admin = () => {
   const { user, isAdmin, loading } = useAuth();
   const [activeTab, setActiveTab] = useState('overview');
-  const { products } = useProducts();
-  const { orders } = useAdminOrders();
+  const [stats, setStats] = useState({
+    totalProducts: 0,
+    totalOrders: 0,
+    revenue: 0,
+    recentOrders: []
+  });
+  const [statsLoading, setStatsLoading] = useState(true);
 
-  // Calculate stats
-  const totalProducts = products.length;
-  const totalOrders = orders.length;
-  const revenue = orders
-    .filter(order => ['completed', 'delivered'].includes(order.status))
-    .reduce((sum, order) => sum + Number(order.total), 0);
-  const recentOrders = orders.slice(0, 5);
+  const fetchStats = async () => {
+    try {
+      setStatsLoading(true);
+      console.log('Fetching admin stats...');
+      
+      // Fetch total products
+      const { count: productsCount, error: productsError } = await supabase
+        .from('products')
+        .select('*', { count: 'exact', head: true });
+
+      if (productsError) {
+        console.error('Products count error:', productsError);
+      }
+
+      // Fetch total orders
+      const { count: ordersCount, error: ordersError } = await supabase
+        .from('orders')
+        .select('*', { count: 'exact', head: true });
+
+      if (ordersError) {
+        console.error('Orders count error:', ordersError);
+      }
+
+      // Fetch revenue from completed orders
+      const { data: ordersData, error: revenueError } = await supabase
+        .from('orders')
+        .select('total')
+        .in('status', ['completed', 'delivered']);
+
+      if (revenueError) {
+        console.error('Revenue error:', revenueError);
+      }
+
+      const revenue = ordersData?.reduce((sum, order) => sum + Number(order.total), 0) || 0;
+
+      // Fetch recent orders
+      const { data: recentOrdersData, error: recentOrdersError } = await supabase
+        .from('orders')
+        .select('id, total, status, created_at, user_id')
+        .order('created_at', { ascending: false })
+        .limit(5);
+
+      if (recentOrdersError) {
+        console.error('Recent orders error:', recentOrdersError);
+      }
+
+      // Fetch customer names for recent orders
+      const userIds = [...new Set(recentOrdersData?.map(order => order.user_id) || [])];
+      let enrichedRecentOrders = recentOrdersData || [];
+
+      if (userIds.length > 0) {
+        const { data: profilesData, error: profilesError } = await supabase
+          .from('profiles')
+          .select('id, full_name, email')
+          .in('id', userIds);
+
+        if (profilesError) {
+          console.error('Profiles error:', profilesError);
+        } else {
+          enrichedRecentOrders = (recentOrdersData || []).map(order => ({
+            ...order,
+            customer_name: profilesData?.find(p => p.id === order.user_id)?.full_name || 'Unknown',
+            customer_email: profilesData?.find(p => p.id === order.user_id)?.email || 'Unknown'
+          }));
+        }
+      }
+
+      console.log('Stats fetched:', { 
+        products: productsCount, 
+        orders: ordersCount, 
+        revenue, 
+        recentOrders: enrichedRecentOrders.length 
+      });
+
+      setStats({
+        totalProducts: productsCount || 0,
+        totalOrders: ordersCount || 0,
+        revenue,
+        recentOrders: enrichedRecentOrders
+      });
+    } catch (error) {
+      console.error('Error fetching stats:', error);
+    } finally {
+      setStatsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (isAdmin) {
+      fetchStats();
+    }
+  }, [isAdmin]);
 
   if (loading) {
     return (
@@ -78,46 +167,54 @@ const Admin = () => {
                 </p>
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-6 mb-6 sm:mb-8">
-                <Card className="glassmorphic hover:scale-105 transition-all duration-300">
-                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                    <CardTitle className="text-xs sm:text-sm font-medium text-gray-600">
-                      Total Products
-                    </CardTitle>
-                    <Package className="h-3 w-3 sm:h-4 sm:w-4 text-pink-500" />
-                  </CardHeader>
-                  <CardContent>
-                    <div className="text-xl sm:text-2xl font-bold text-gray-800">{totalProducts}</div>
-                    <p className="text-xs text-gray-500">Active products</p>
-                  </CardContent>
-                </Card>
+              {statsLoading ? (
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-6 mb-6 sm:mb-8">
+                  {[...Array(3)].map((_, i) => (
+                    <div key={i} className="h-24 sm:h-32 bg-gray-200 rounded-lg animate-pulse"></div>
+                  ))}
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-6 mb-6 sm:mb-8">
+                  <Card className="glassmorphic hover:scale-105 transition-all duration-300">
+                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                      <CardTitle className="text-xs sm:text-sm font-medium text-gray-600">
+                        Total Products
+                      </CardTitle>
+                      <Package className="h-3 w-3 sm:h-4 sm:w-4 text-pink-500" />
+                    </CardHeader>
+                    <CardContent>
+                      <div className="text-xl sm:text-2xl font-bold text-gray-800">{stats.totalProducts}</div>
+                      <p className="text-xs text-gray-500">Active products</p>
+                    </CardContent>
+                  </Card>
 
-                <Card className="glassmorphic hover:scale-105 transition-all duration-300">
-                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                    <CardTitle className="text-xs sm:text-sm font-medium text-gray-600">
-                      Total Orders
-                    </CardTitle>
-                    <Users className="h-3 w-3 sm:h-4 sm:w-4 text-pink-500" />
-                  </CardHeader>
-                  <CardContent>
-                    <div className="text-xl sm:text-2xl font-bold text-gray-800">{totalOrders}</div>
-                    <p className="text-xs text-gray-500">All time orders</p>
-                  </CardContent>
-                </Card>
+                  <Card className="glassmorphic hover:scale-105 transition-all duration-300">
+                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                      <CardTitle className="text-xs sm:text-sm font-medium text-gray-600">
+                        Total Orders
+                      </CardTitle>
+                      <Users className="h-3 w-3 sm:h-4 sm:w-4 text-pink-500" />
+                    </CardHeader>
+                    <CardContent>
+                      <div className="text-xl sm:text-2xl font-bold text-gray-800">{stats.totalOrders}</div>
+                      <p className="text-xs text-gray-500">All time orders</p>
+                    </CardContent>
+                  </Card>
 
-                <Card className="glassmorphic hover:scale-105 transition-all duration-300">
-                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                    <CardTitle className="text-xs sm:text-sm font-medium text-gray-600">
-                      Revenue
-                    </CardTitle>
-                    <BarChart3 className="h-3 w-3 sm:h-4 sm:w-4 text-pink-500" />
-                  </CardHeader>
-                  <CardContent>
-                    <div className="text-xl sm:text-2xl font-bold text-gray-800">KSh {revenue.toLocaleString()}</div>
-                    <p className="text-xs text-gray-500">Completed orders</p>
-                  </CardContent>
-                </Card>
-              </div>
+                  <Card className="glassmorphic hover:scale-105 transition-all duration-300">
+                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                      <CardTitle className="text-xs sm:text-sm font-medium text-gray-600">
+                        Revenue
+                      </CardTitle>
+                      <BarChart3 className="h-3 w-3 sm:h-4 sm:w-4 text-pink-500" />
+                    </CardHeader>
+                    <CardContent>
+                      <div className="text-xl sm:text-2xl font-bold text-gray-800">KSh {stats.revenue.toLocaleString()}</div>
+                      <p className="text-xs text-gray-500">Completed orders</p>
+                    </CardContent>
+                  </Card>
+                </div>
+              )}
 
               <div className="grid grid-cols-1 gap-3 sm:gap-6">
                 <Card className="glassmorphic">
@@ -126,7 +223,7 @@ const Admin = () => {
                   </CardHeader>
                   <CardContent>
                     <div className="space-y-2 sm:space-y-4">
-                      {recentOrders.map((order: any) => (
+                      {stats.recentOrders.map((order: any) => (
                         <div key={order.id} className="flex items-center justify-between p-2 sm:p-3 bg-white/50 rounded-lg">
                           <div className="flex-1 min-w-0">
                             <p className="font-medium text-gray-800 text-xs sm:text-sm">Order #{order.id.slice(0, 8)}</p>
@@ -144,7 +241,7 @@ const Admin = () => {
                           </div>
                         </div>
                       ))}
-                      {recentOrders.length === 0 && (
+                      {stats.recentOrders.length === 0 && (
                         <p className="text-gray-500 text-center py-4 text-xs sm:text-sm">No orders yet</p>
                       )}
                     </div>

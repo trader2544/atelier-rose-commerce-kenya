@@ -1,15 +1,146 @@
 
-import React, { useState } from 'react';
-import { Search, Package } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Search, Package, Eye } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { useAdminOrders } from '@/hooks/useOrders';
+import { supabase } from '@/integrations/supabase/client';
+import { toast } from '@/hooks/use-toast';
+
+interface ShippingAddress {
+  name: string;
+  phone: string;
+  street: string;
+  city: string;
+  delivery_location?: string;
+}
+
+interface Order {
+  id: string;
+  user_id: string;
+  total: number;
+  status: string;
+  payment_status: string;
+  payment_method: string;
+  shipping_address: ShippingAddress;
+  created_at: string;
+  customer_name?: string;
+  customer_email?: string;
+  customer_phone?: string;
+  order_items: Array<{
+    id: string;
+    quantity: number;
+    price: number;
+    product_id: string;
+    products?: {
+      name: string;
+      images: string[];
+    };
+  }>;
+}
 
 const AdminOrders = () => {
-  const { orders, loading, updateOrderStatus } = useAdminOrders();
+  const [orders, setOrders] = useState<Order[]>([]);
+  const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
+
+  const fetchOrders = async () => {
+    try {
+      setLoading(true);
+      
+      // Fetch orders with order items and products
+      const { data: ordersData, error: ordersError } = await supabase
+        .from('orders')
+        .select(`
+          *,
+          order_items (
+            *,
+            products:product_id (
+              name,
+              images
+            )
+          )
+        `)
+        .order('created_at', { ascending: false });
+
+      if (ordersError) {
+        console.error('Orders fetch error:', ordersError);
+        throw ordersError;
+      }
+
+      // Fetch customer profiles separately
+      const userIds = [...new Set(ordersData?.map(order => order.user_id) || [])];
+      
+      let customerProfiles: any[] = [];
+      if (userIds.length > 0) {
+        const { data: profilesData, error: profilesError } = await supabase
+          .from('profiles')
+          .select('id, full_name, email, phone')
+          .in('id', userIds);
+
+        if (profilesError) {
+          console.error('Profiles fetch error:', profilesError);
+        } else {
+          customerProfiles = profilesData || [];
+        }
+      }
+
+      // Combine orders with customer data
+      const enrichedOrders = (ordersData || []).map(order => {
+        const customerProfile = customerProfiles.find(profile => profile.id === order.user_id);
+        const shippingAddress = order.shipping_address as ShippingAddress;
+        
+        return {
+          ...order,
+          shipping_address: shippingAddress,
+          customer_name: customerProfile?.full_name || shippingAddress?.name || 'Unknown',
+          customer_email: customerProfile?.email || 'Unknown',
+          customer_phone: customerProfile?.phone || shippingAddress?.phone || 'Unknown'
+        };
+      });
+
+      setOrders(enrichedOrders);
+    } catch (error) {
+      console.error('Error fetching orders:', error);
+      toast({
+        title: "Error",
+        description: "Failed to fetch orders",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchOrders();
+  }, []);
+
+  const updateOrderStatus = async (orderId: string, newStatus: string) => {
+    try {
+      const { error } = await supabase
+        .from('orders')
+        .update({ status: newStatus })
+        .eq('id', orderId);
+
+      if (error) throw error;
+
+      toast({
+        title: "Success",
+        description: "Order status updated successfully",
+      });
+
+      fetchOrders();
+    } catch (error) {
+      console.error('Error updating order:', error);
+      toast({
+        title: "Error",
+        description: "Failed to update order status",
+        variant: "destructive",
+      });
+    }
+  };
 
   const filteredOrders = orders.filter(order =>
     order.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -111,10 +242,6 @@ const AdminOrders = () => {
                           src={item.products.images[0]}
                           alt={item.products?.name || 'Product'}
                           className="w-8 h-8 sm:w-12 sm:h-12 object-cover rounded"
-                          onError={(e) => {
-                            const target = e.target as HTMLImageElement;
-                            target.src = '/placeholder.svg';
-                          }}
                         />
                       )}
                       <div className="flex-1 min-w-0">

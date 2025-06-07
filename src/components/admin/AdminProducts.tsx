@@ -1,19 +1,69 @@
 
-import React, { useState } from 'react';
-import { Plus, Edit, Trash2 } from 'lucide-react';
-import { useProducts } from '@/hooks/useProducts';
+import React, { useState, useEffect } from 'react';
+import { Plus, Edit, Trash2, Eye } from 'lucide-react';
+import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { toast } from '@/hooks/use-toast';
-import { supabase } from '@/integrations/supabase/client';
 import ProductForm from './ProductForm';
-import { Product } from '@/types/product';
+
+interface DatabaseProduct {
+  id: string;
+  name: string;
+  price: number;
+  images: string[];
+  category: string;
+  description?: string;
+  original_price?: number;
+  in_stock: boolean;
+  featured: boolean;
+  created_at: string;
+  rating: number;
+  reviews: number;
+  updated_at: string;
+}
 
 const AdminProducts = () => {
-  const { products, loading, refetch } = useProducts();
+  const [products, setProducts] = useState<DatabaseProduct[]>([]);
   const [showForm, setShowForm] = useState(false);
-  const [editingProduct, setEditingProduct] = useState<Product | null>(null);
+  const [editingProduct, setEditingProduct] = useState<DatabaseProduct | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  const fetchProducts = async () => {
+    try {
+      setLoading(true);
+      const { data, error } = await supabase
+        .from('products')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+      if (error) {
+        console.error('Error fetching products:', error);
+        toast({
+          title: "Error",
+          description: "Failed to fetch products",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      setProducts(data || []);
+    } catch (error) {
+      console.error('Error fetching products:', error);
+      toast({
+        title: "Error",
+        description: "Failed to fetch products",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchProducts();
+  }, []);
 
   const handleDelete = async (productId: string) => {
     if (!confirm('Are you sure you want to delete this product?')) return;
@@ -31,7 +81,7 @@ const AdminProducts = () => {
         description: "Product deleted successfully",
       });
       
-      refetch();
+      fetchProducts();
     } catch (error) {
       console.error('Error deleting product:', error);
       toast({
@@ -43,7 +93,7 @@ const AdminProducts = () => {
   };
 
   const handleSave = () => {
-    refetch();
+    fetchProducts();
     setShowForm(false);
     setEditingProduct(null);
   };
@@ -87,10 +137,6 @@ const AdminProducts = () => {
                       src={product.images[0]}
                       alt={product.name}
                       className="w-full h-32 sm:h-48 object-cover rounded-lg mb-2 sm:mb-3"
-                      onError={(e) => {
-                        const target = e.target as HTMLImageElement;
-                        target.src = '/placeholder.svg';
-                      }}
                     />
                   )}
                   <div className="absolute top-2 right-2 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">

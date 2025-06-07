@@ -2,7 +2,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { ShoppingCart } from 'lucide-react';
-import { Product } from '@/types/product';
+import { Product } from '@/types';
 import { Button } from '@/components/ui/button';
 import { useCart } from '@/contexts/CartContext';
 import { toast } from '@/hooks/use-toast';
@@ -16,7 +16,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
 
   const handleAddToCart = (e: React.MouseEvent) => {
     e.preventDefault();
-    if (!product.in_stock) {
+    if (!product.inStock) {
       toast({
         title: "Out of Stock",
         description: "This item is currently unavailable.",
@@ -25,7 +25,24 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
       return;
     }
     
-    dispatch({ type: 'ADD_TO_CART', payload: product });
+    // Convert to CartContext Product format
+    const cartProduct = {
+      id: product.id,
+      name: product.name,
+      price: product.price,
+      images: product.images,
+      category: product.category,
+      description: product.description,
+      original_price: product.originalPrice,
+      in_stock: product.inStock,
+      featured: product.featured || false,
+      created_at: new Date().toISOString(),
+      rating: product.rating || 0,
+      reviews: product.reviews || 0,
+      updated_at: new Date().toISOString()
+    };
+    
+    dispatch({ type: 'ADD_TO_CART', payload: cartProduct });
     toast({
       title: "Added to Cart",
       description: `${product.name} has been added to your cart.`,
@@ -37,20 +54,16 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
       <Link to={`/product/${product.id}`}>
         <div className="relative overflow-hidden">
           <img
-            src={product.images && product.images.length > 0 ? product.images[0] : '/placeholder.svg'}
+            src={product.images[0]}
             alt={product.name}
             className="w-full h-64 object-cover transition-transform duration-500 group-hover:scale-110"
-            onError={(e) => {
-              const target = e.target as HTMLImageElement;
-              target.src = '/placeholder.svg';
-            }}
           />
-          {product.original_price && (
+          {product.originalPrice && (
             <div className="absolute top-3 left-3 bg-rose-500 text-white px-2 py-1 rounded-full text-xs font-medium">
               Sale
             </div>
           )}
-          {!product.in_stock && (
+          {!product.inStock && (
             <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
               <span className="text-white font-medium">Out of Stock</span>
             </div>
@@ -71,14 +84,14 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
               <span className="text-xl font-semibold text-rose-600">
                 KSh {product.price.toLocaleString()}
               </span>
-              {product.original_price && (
+              {product.originalPrice && (
                 <span className="text-sm text-gray-500 line-through">
-                  KSh {product.original_price.toLocaleString()}
+                  KSh {product.originalPrice.toLocaleString()}
                 </span>
               )}
             </div>
             
-            {product.rating > 0 && (
+            {product.rating && (
               <div className="flex items-center space-x-1 text-sm text-gray-600">
                 <span>★</span>
                 <span>{product.rating}</span>
@@ -92,11 +105,11 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
       <div className="px-6 pb-6">
         <Button
           onClick={handleAddToCart}
-          disabled={!product.in_stock}
+          disabled={!product.inStock}
           className="w-full btn-primary flex items-center justify-center space-x-2"
         >
           <ShoppingCart className="h-4 w-4" />
-          <span>{product.in_stock ? 'Add to Cart' : 'Out of Stock'}</span>
+          <span>{product.inStock ? 'Add to Cart' : 'Out of Stock'}</span>
         </Button>
       </div>
     </div>
