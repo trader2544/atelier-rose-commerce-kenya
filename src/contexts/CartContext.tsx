@@ -1,6 +1,18 @@
 
 import React, { createContext, useContext, useReducer, useEffect } from 'react';
-import { CartItem, Product } from '@/types';
+
+interface CartItem {
+  id: string;
+  product: {
+    id: string;
+    name: string;
+    price: number;
+    images: string[];
+    category: string;
+    description?: string;
+  };
+  quantity: number;
+}
 
 interface CartState {
   items: CartItem[];
@@ -9,11 +21,11 @@ interface CartState {
 }
 
 type CartAction = 
-  | { type: 'ADD_TO_CART'; product: Product }
-  | { type: 'REMOVE_FROM_CART'; productId: string }
-  | { type: 'UPDATE_QUANTITY'; productId: string; quantity: number }
+  | { type: 'ADD_TO_CART'; payload: any }
+  | { type: 'REMOVE_FROM_CART'; payload: string }
+  | { type: 'UPDATE_QUANTITY'; payload: { productId: string; quantity: number } }
   | { type: 'CLEAR_CART' }
-  | { type: 'LOAD_CART'; items: CartItem[] };
+  | { type: 'LOAD_CART'; payload: CartItem[] };
 
 const CartContext = createContext<{
   state: CartState;
@@ -23,35 +35,51 @@ const CartContext = createContext<{
 const cartReducer = (state: CartState, action: CartAction): CartState => {
   switch (action.type) {
     case 'ADD_TO_CART': {
-      const existingItem = state.items.find(item => item.product.id === action.product.id);
+      const product = action.payload;
+      const existingItem = state.items.find(item => item.product.id === product.id);
       
       if (existingItem) {
         const updatedItems = state.items.map(item =>
-          item.product.id === action.product.id
+          item.product.id === product.id
             ? { ...item, quantity: item.quantity + 1 }
             : item
         );
         return calculateTotals({ ...state, items: updatedItems });
       }
       
-      const newItems = [...state.items, { id: action.product.id, product: action.product, quantity: 1 }];
+      const newItem: CartItem = {
+        id: product.id,
+        product: {
+          id: product.id,
+          name: product.name,
+          price: product.price,
+          images: product.images || [],
+          category: product.category,
+          description: product.description
+        },
+        quantity: 1
+      };
+      
+      const newItems = [...state.items, newItem];
       return calculateTotals({ ...state, items: newItems });
     }
     
     case 'REMOVE_FROM_CART': {
-      const newItems = state.items.filter(item => item.product.id !== action.productId);
+      const newItems = state.items.filter(item => item.product.id !== action.payload);
       return calculateTotals({ ...state, items: newItems });
     }
     
     case 'UPDATE_QUANTITY': {
-      if (action.quantity <= 0) {
-        const newItems = state.items.filter(item => item.product.id !== action.productId);
+      const { productId, quantity } = action.payload;
+      
+      if (quantity <= 0) {
+        const newItems = state.items.filter(item => item.product.id !== productId);
         return calculateTotals({ ...state, items: newItems });
       }
       
       const updatedItems = state.items.map(item =>
-        item.product.id === action.productId
-          ? { ...item, quantity: action.quantity }
+        item.product.id === productId
+          ? { ...item, quantity }
           : item
       );
       return calculateTotals({ ...state, items: updatedItems });
@@ -61,7 +89,7 @@ const cartReducer = (state: CartState, action: CartAction): CartState => {
       return { items: [], total: 0, itemCount: 0 };
     
     case 'LOAD_CART':
-      return calculateTotals({ ...state, items: action.items });
+      return calculateTotals({ ...state, items: action.payload });
     
     default:
       return state;
@@ -86,7 +114,7 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
     if (savedCart) {
       try {
         const items = JSON.parse(savedCart);
-        dispatch({ type: 'LOAD_CART', items });
+        dispatch({ type: 'LOAD_CART', payload: items });
       } catch (error) {
         console.error('Error loading cart from localStorage:', error);
       }
