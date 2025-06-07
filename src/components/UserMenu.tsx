@@ -1,7 +1,7 @@
 
-import React, { useState } from 'react';
+import React from 'react';
 import { Link } from 'react-router-dom';
-import { User, LogOut, ShoppingBag, Settings } from 'lucide-react';
+import { User, LogOut, ShoppingBag } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
@@ -13,7 +13,13 @@ import {
 import { useAuth } from '@/hooks/useAuth';
 
 const UserMenu = () => {
-  const { user, signOut, profile } = useAuth();
+  const { user, signOut, profile, loading } = useAuth();
+
+  if (loading) {
+    return (
+      <div className="w-8 h-8 rounded-full bg-gray-200 animate-pulse"></div>
+    );
+  }
 
   if (!user) {
     return (

@@ -1,3 +1,4 @@
+
 import Hero from "@/components/Hero";
 import Newsletter from "@/components/Newsletter";
 import { Card, CardContent } from "@/components/ui/card";
@@ -6,21 +7,36 @@ import { Button } from "@/components/ui/button";
 import { ShoppingCart, Eye, Star } from "lucide-react";
 import { useCart } from "@/contexts/CartContext";
 import { supabase } from "@/integrations/supabase/client";
-import { DatabaseProduct } from "@/types/database";
 import { toast } from "@/hooks/use-toast";
 import { useState, useEffect } from "react";
 import ProductModal from "@/components/ProductModal";
+import { useAuth } from "@/hooks/useAuth";
+
+interface Product {
+  id: string;
+  name: string;
+  price: number;
+  images: string[];
+  category: string;
+  description?: string;
+  original_price?: number;
+  in_stock: boolean;
+  featured: boolean;
+  rating?: number;
+  reviews?: number;
+}
 
 const Index = () => {
-  const [featuredProducts, setFeaturedProducts] = useState<DatabaseProduct[]>([]);
+  const [featuredProducts, setFeaturedProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
-  const [selectedProduct, setSelectedProduct] = useState<DatabaseProduct | null>(null);
+  const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const { dispatch } = useCart();
+  const { user } = useAuth();
 
   useEffect(() => {
     fetchFeaturedProducts();
-  }, []);
+  }, [user]);
 
   const fetchFeaturedProducts = async () => {
     try {
@@ -42,15 +58,15 @@ const Index = () => {
     }
   };
 
-  const handleAddToCart = (product: DatabaseProduct) => {
-    dispatch({ type: 'ADD_ITEM', payload: product });
+  const handleAddToCart = (product: Product) => {
+    dispatch({ type: 'ADD_TO_CART', payload: product });
     toast({
       title: "Added to cart",
       description: `${product.name} has been added to your cart`,
     });
   };
 
-  const handleViewProduct = (product: DatabaseProduct) => {
+  const handleViewProduct = (product: Product) => {
     setSelectedProduct(product);
     setIsModalOpen(true);
   };

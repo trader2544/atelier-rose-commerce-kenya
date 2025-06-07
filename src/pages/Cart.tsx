@@ -9,11 +9,11 @@ const Cart = () => {
   const { state, dispatch } = useCart();
 
   const updateQuantity = (productId: string, quantity: number) => {
-    dispatch({ type: 'UPDATE_QUANTITY', productId, quantity });
+    dispatch({ type: 'UPDATE_QUANTITY', payload: { productId, quantity } });
   };
 
   const removeItem = (productId: string) => {
-    dispatch({ type: 'REMOVE_FROM_CART', productId });
+    dispatch({ type: 'REMOVE_FROM_CART', payload: productId });
   };
 
   const shippingFee = 200;

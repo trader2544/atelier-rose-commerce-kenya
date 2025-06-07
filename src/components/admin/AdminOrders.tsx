@@ -21,7 +21,7 @@ interface Order {
     full_name: string;
     email: string;
     phone: string;
-  };
+  } | null;
   order_items: Array<{
     id: string;
     quantity: number;
@@ -46,7 +46,7 @@ const AdminOrders = () => {
         .from('orders')
         .select(`
           *,
-          profiles:user_id (
+          profiles!inner (
             full_name,
             email,
             phone
@@ -62,7 +62,18 @@ const AdminOrders = () => {
         .order('created_at', { ascending: false });
 
       if (error) throw error;
-      setOrders(data || []);
+      
+      // Transform the data to match our interface
+      const transformedOrders: Order[] = (data || []).map(order => ({
+        ...order,
+        profiles: order.profiles ? {
+          full_name: order.profiles.full_name || '',
+          email: order.profiles.email || '',
+          phone: order.profiles.phone || ''
+        } : null
+      }));
+
+      setOrders(transformedOrders);
     } catch (error) {
       console.error('Error fetching orders:', error);
       toast({
