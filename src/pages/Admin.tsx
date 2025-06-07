@@ -22,40 +22,82 @@ const Admin = () => {
   const fetchStats = async () => {
     try {
       setStatsLoading(true);
+      console.log('Fetching admin stats...');
       
       // Fetch total products
-      const { count: productsCount } = await supabase
+      const { count: productsCount, error: productsError } = await supabase
         .from('products')
         .select('*', { count: 'exact', head: true });
 
+      if (productsError) {
+        console.error('Products count error:', productsError);
+      }
+
       // Fetch total orders
-      const { count: ordersCount } = await supabase
+      const { count: ordersCount, error: ordersError } = await supabase
         .from('orders')
         .select('*', { count: 'exact', head: true });
 
+      if (ordersError) {
+        console.error('Orders count error:', ordersError);
+      }
+
       // Fetch revenue from completed orders
-      const { data: ordersData } = await supabase
+      const { data: ordersData, error: revenueError } = await supabase
         .from('orders')
         .select('total')
         .in('status', ['completed', 'delivered']);
 
+      if (revenueError) {
+        console.error('Revenue error:', revenueError);
+      }
+
       const revenue = ordersData?.reduce((sum, order) => sum + Number(order.total), 0) || 0;
 
-      // Fetch recent orders with customer info
-      const { data: recentOrders } = await supabase
+      // Fetch recent orders
+      const { data: recentOrdersData, error: recentOrdersError } = await supabase
         .from('orders')
-        .select(`
-          *,
-          profiles:user_id (full_name, email)
-        `)
+        .select('id, total, status, created_at, user_id')
         .order('created_at', { ascending: false })
         .limit(5);
+
+      if (recentOrdersError) {
+        console.error('Recent orders error:', recentOrdersError);
+      }
+
+      // Fetch customer names for recent orders
+      const userIds = [...new Set(recentOrdersData?.map(order => order.user_id) || [])];
+      let enrichedRecentOrders = recentOrdersData || [];
+
+      if (userIds.length > 0) {
+        const { data: profilesData, error: profilesError } = await supabase
+          .from('profiles')
+          .select('id, full_name, email')
+          .in('id', userIds);
+
+        if (profilesError) {
+          console.error('Profiles error:', profilesError);
+        } else {
+          enrichedRecentOrders = (recentOrdersData || []).map(order => ({
+            ...order,
+            customer_name: profilesData?.find(p => p.id === order.user_id)?.full_name || 'Unknown',
+            customer_email: profilesData?.find(p => p.id === order.user_id)?.email || 'Unknown'
+          }));
+        }
+      }
+
+      console.log('Stats fetched:', { 
+        products: productsCount, 
+        orders: ordersCount, 
+        revenue, 
+        recentOrders: enrichedRecentOrders.length 
+      });
 
       setStats({
         totalProducts: productsCount || 0,
         totalOrders: ordersCount || 0,
         revenue,
-        recentOrders: recentOrders || []
+        recentOrders: enrichedRecentOrders
       });
     } catch (error) {
       console.error('Error fetching stats:', error);
@@ -185,7 +227,7 @@ const Admin = () => {
                         <div key={order.id} className="flex items-center justify-between p-2 sm:p-3 bg-white/50 rounded-lg">
                           <div className="flex-1 min-w-0">
                             <p className="font-medium text-gray-800 text-xs sm:text-sm">Order #{order.id.slice(0, 8)}</p>
-                            <p className="text-xs sm:text-sm text-gray-600 truncate">{order.profiles?.full_name || order.profiles?.email}</p>
+                            <p className="text-xs sm:text-sm text-gray-600 truncate">{order.customer_name || order.customer_email}</p>
                           </div>
                           <div className="text-right">
                             <p className="font-semibold text-pink-600 text-xs sm:text-sm">KSh {Number(order.total).toLocaleString()}</p>

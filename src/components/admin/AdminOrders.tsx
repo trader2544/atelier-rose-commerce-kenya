@@ -17,11 +17,9 @@ interface Order {
   payment_method: string;
   shipping_address: any;
   created_at: string;
-  profiles?: {
-    full_name: string;
-    email: string;
-    phone: string;
-  } | null;
+  customer_name?: string;
+  customer_email?: string;
+  customer_phone?: string;
   order_items: Array<{
     id: string;
     quantity: number;
@@ -42,15 +40,12 @@ const AdminOrders = () => {
   const fetchOrders = async () => {
     try {
       setLoading(true);
-      const { data, error } = await supabase
+      
+      // Fetch orders with order items and products
+      const { data: ordersData, error: ordersError } = await supabase
         .from('orders')
         .select(`
           *,
-          profiles!inner (
-            full_name,
-            email,
-            phone
-          ),
           order_items (
             *,
             products:product_id (
@@ -61,19 +56,40 @@ const AdminOrders = () => {
         `)
         .order('created_at', { ascending: false });
 
-      if (error) throw error;
-      
-      // Transform the data to match our interface
-      const transformedOrders: Order[] = (data || []).map(order => ({
-        ...order,
-        profiles: order.profiles ? {
-          full_name: order.profiles.full_name || '',
-          email: order.profiles.email || '',
-          phone: order.profiles.phone || ''
-        } : null
-      }));
+      if (ordersError) {
+        console.error('Orders fetch error:', ordersError);
+        throw ordersError;
+      }
 
-      setOrders(transformedOrders);
+      // Fetch customer profiles separately
+      const userIds = [...new Set(ordersData?.map(order => order.user_id) || [])];
+      
+      let customerProfiles: any[] = [];
+      if (userIds.length > 0) {
+        const { data: profilesData, error: profilesError } = await supabase
+          .from('profiles')
+          .select('id, full_name, email, phone')
+          .in('id', userIds);
+
+        if (profilesError) {
+          console.error('Profiles fetch error:', profilesError);
+        } else {
+          customerProfiles = profilesData || [];
+        }
+      }
+
+      // Combine orders with customer data
+      const enrichedOrders = (ordersData || []).map(order => {
+        const customerProfile = customerProfiles.find(profile => profile.id === order.user_id);
+        return {
+          ...order,
+          customer_name: customerProfile?.full_name || order.shipping_address?.name || 'Unknown',
+          customer_email: customerProfile?.email || 'Unknown',
+          customer_phone: customerProfile?.phone || order.shipping_address?.phone || 'Unknown'
+        };
+      });
+
+      setOrders(enrichedOrders);
     } catch (error) {
       console.error('Error fetching orders:', error);
       toast({
@@ -118,8 +134,8 @@ const AdminOrders = () => {
   const filteredOrders = orders.filter(order =>
     order.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
     order.status.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    order.profiles?.full_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    order.profiles?.email?.toLowerCase().includes(searchTerm.toLowerCase())
+    order.customer_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    order.customer_email?.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   if (loading) {
@@ -166,9 +182,9 @@ const AdminOrders = () => {
                   </CardTitle>
                   <div className="text-xs sm:text-sm text-gray-600 mt-1 space-y-1">
                     <p>{new Date(order.created_at).toLocaleDateString()}</p>
-                    <p><strong>Customer:</strong> {order.profiles?.full_name || 'Unknown'}</p>
-                    <p><strong>Email:</strong> {order.profiles?.email}</p>
-                    {order.profiles?.phone && <p><strong>Phone:</strong> {order.profiles.phone}</p>}
+                    <p><strong>Customer:</strong> {order.customer_name}</p>
+                    <p><strong>Email:</strong> {order.customer_email}</p>
+                    {order.customer_phone && <p><strong>Phone:</strong> {order.customer_phone}</p>}
                   </div>
                 </div>
                 <div className="flex flex-col sm:flex-row gap-2">
