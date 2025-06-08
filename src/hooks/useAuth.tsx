@@ -51,14 +51,17 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     setUser(newSession?.user ?? null);
 
     if (newSession?.user) {
-      // Check admin status
-      const isAdminUser = newSession.user.email === 'odikacamillah585@gmail.com';
-      setIsAdmin(isAdminUser);
-
       // Fetch profile separately to avoid blocking
       setTimeout(async () => {
         const profileData = await fetchProfile(newSession.user.id);
         setProfile(profileData);
+        
+        // Check if user is admin based on profile role or email
+        const isAdminUser = profileData?.role === 'admin' || newSession.user.email === 'odikacamillah585@gmail.com';
+        setIsAdmin(isAdminUser);
+        
+        console.log('Profile data:', profileData);
+        console.log('Is admin:', isAdminUser);
       }, 100);
     } else {
       setProfile(null);

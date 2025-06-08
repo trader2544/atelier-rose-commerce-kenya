@@ -22,6 +22,7 @@ serve(async (req) => {
 
   try {
     const { phone, amount, orderId, accountReference, transactionDesc }: STKPushRequest = await req.json()
+    console.log('STK Push request:', { phone, amount, orderId, accountReference, transactionDesc })
 
     // Get environment variables
     const consumerKey = Deno.env.get('MPESA_CONSUMER_KEY')
@@ -30,11 +31,27 @@ serve(async (req) => {
     const passkey = Deno.env.get('MPESA_PASSKEY')
     const callbackUrl = Deno.env.get('MPESA_CALLBACK_URL')
 
+    console.log('Environment check:', {
+      hasConsumerKey: !!consumerKey,
+      hasConsumerSecret: !!consumerSecret,
+      hasBusinessShortCode: !!businessShortCode,
+      hasPasskey: !!passkey,
+      hasCallbackUrl: !!callbackUrl
+    })
+
     if (!consumerKey || !consumerSecret || !businessShortCode || !passkey || !callbackUrl) {
-      throw new Error('Missing M-Pesa configuration')
+      const missingVars = []
+      if (!consumerKey) missingVars.push('MPESA_CONSUMER_KEY')
+      if (!consumerSecret) missingVars.push('MPESA_CONSUMER_SECRET')
+      if (!businessShortCode) missingVars.push('MPESA_BUSINESS_SHORTCODE')
+      if (!passkey) missingVars.push('MPESA_PASSKEY')
+      if (!callbackUrl) missingVars.push('MPESA_CALLBACK_URL')
+      
+      throw new Error(`Missing M-Pesa configuration: ${missingVars.join(', ')}`)
     }
 
     // Step 1: Get access token
+    console.log('Getting access token...')
     const auth = btoa(`${consumerKey}:${consumerSecret}`)
     const tokenResponse = await fetch('https://sandbox.safaricom.co.ke/oauth/v1/generate?grant_type=client_credentials', {
       method: 'GET',
@@ -44,20 +61,34 @@ serve(async (req) => {
     })
 
     if (!tokenResponse.ok) {
-      throw new Error('Failed to get access token')
+      const errorText = await tokenResponse.text()
+      console.error('Token response error:', errorText)
+      throw new Error(`Failed to get access token: ${tokenResponse.status} ${errorText}`)
     }
 
     const tokenData = await tokenResponse.json()
+    console.log('Token response:', tokenData)
     const accessToken = tokenData.access_token
+
+    if (!accessToken) {
+      throw new Error('No access token received from M-Pesa API')
+    }
 
     // Step 2: Generate timestamp and password
     const timestamp = new Date().toISOString().replace(/[^0-9]/g, '').slice(0, 14)
     const password = btoa(`${businessShortCode}${passkey}${timestamp}`)
 
     // Step 3: Format phone number
-    const formattedPhone = phone.startsWith('0') ? `254${phone.slice(1)}` : 
-                          phone.startsWith('+254') ? phone.slice(1) : 
-                          phone.startsWith('254') ? phone : `254${phone}`
+    let formattedPhone = phone.replace(/\s+/g, '')
+    if (formattedPhone.startsWith('0')) {
+      formattedPhone = `254${formattedPhone.slice(1)}`
+    } else if (formattedPhone.startsWith('+254')) {
+      formattedPhone = formattedPhone.slice(1)
+    } else if (!formattedPhone.startsWith('254')) {
+      formattedPhone = `254${formattedPhone}`
+    }
+
+    console.log('Formatted phone:', formattedPhone)
 
     // Step 4: Prepare STK Push request
     const stkPushData = {
@@ -74,6 +105,8 @@ serve(async (req) => {
       TransactionDesc: transactionDesc
     }
 
+    console.log('STK Push data:', stkPushData)
+
     // Step 5: Send STK Push request
     const stkResponse = await fetch('https://sandbox.safaricom.co.ke/mpesa/stkpush/v1/processrequest', {
       method: 'POST',
@@ -85,6 +118,7 @@ serve(async (req) => {
     })
 
     const stkResult = await stkResponse.json()
+    console.log('STK Push response:', stkResult)
 
     if (stkResult.ResponseCode === '0') {
       // Success - store transaction details
@@ -115,7 +149,8 @@ serve(async (req) => {
         },
       )
     } else {
-      throw new Error(stkResult.errorMessage || 'STK Push failed')
+      console.error('STK Push failed:', stkResult)
+      throw new Error(stkResult.errorMessage || stkResult.ResponseDescription || 'STK Push failed')
     }
 
   } catch (error) {

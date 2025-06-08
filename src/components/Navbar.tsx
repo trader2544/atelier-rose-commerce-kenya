@@ -10,10 +10,7 @@ import UserMenu from './UserMenu';
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
   const { state } = useCart();
-  const { user, profile } = useAuth();
-
-  // Check if user is admin
-  const isAdmin = profile?.role === 'admin';
+  const { user, isAdmin } = useAuth();
 
   const toggleMenu = () => {
     setIsOpen(!isOpen);
@@ -54,7 +51,7 @@ const Navbar = () => {
 
           {/* Right side - Desktop */}
           <div className="hidden md:flex items-center space-x-4">
-            {isAdmin && (
+            {user && isAdmin && (
               <Link to="/admin">
                 <Button variant="outline" size="sm" className="border-pink-200 hover:bg-pink-50">
                   <Settings className="h-4 w-4 mr-2" />
@@ -132,7 +129,7 @@ const Navbar = () => {
             >
               Contact
             </Link>
-            {isAdmin && (
+            {user && isAdmin && (
               <Link
                 to="/admin"
                 className="block py-2 text-gray-700 hover:text-pink-600 transition-colors"

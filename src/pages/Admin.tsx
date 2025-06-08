@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -9,7 +8,7 @@ import AdminProducts from '@/components/admin/AdminProducts';
 import AdminOrders from '@/components/admin/AdminOrders';
 
 const Admin = () => {
-  const { user, profile, loading } = useAuth();
+  const { user, isAdmin, loading } = useAuth();
   const [activeTab, setActiveTab] = useState('overview');
   const [stats, setStats] = useState({
     totalProducts: 0,
@@ -18,9 +17,6 @@ const Admin = () => {
     recentOrders: []
   });
   const [statsLoading, setStatsLoading] = useState(true);
-
-  // Check if user is admin
-  const isAdmin = profile?.role === 'admin';
 
   const fetchStats = async () => {
     try {
@@ -60,7 +56,7 @@ const Admin = () => {
       // Fetch recent orders
       const { data: recentOrdersData, error: recentOrdersError } = await supabase
         .from('orders')
-        .select('id, total, status, created_at, user_id')
+        .select('id, total, status, created_at, user_id, shipping_address')
         .order('created_at', { ascending: false })
         .limit(5);
 
@@ -68,26 +64,12 @@ const Admin = () => {
         console.error('Recent orders error:', recentOrdersError);
       }
 
-      // Fetch customer names for recent orders
-      const userIds = [...new Set(recentOrdersData?.map(order => order.user_id) || [])];
-      let enrichedRecentOrders = recentOrdersData || [];
-
-      if (userIds.length > 0) {
-        const { data: profilesData, error: profilesError } = await supabase
-          .from('profiles')
-          .select('id, full_name, email')
-          .in('id', userIds);
-
-        if (profilesError) {
-          console.error('Profiles error:', profilesError);
-        } else {
-          enrichedRecentOrders = (recentOrdersData || []).map(order => ({
-            ...order,
-            customer_name: profilesData?.find(p => p.id === order.user_id)?.full_name || 'Unknown',
-            customer_email: profilesData?.find(p => p.id === order.user_id)?.email || 'Unknown'
-          }));
-        }
-      }
+      // Extract customer info from shipping_address
+      const enrichedRecentOrders = (recentOrdersData || []).map(order => ({
+        ...order,
+        customer_name: order.shipping_address?.name || 'Unknown',
+        customer_email: order.shipping_address?.email || 'Unknown'
+      }));
 
       console.log('Stats fetched:', { 
         products: productsCount, 
