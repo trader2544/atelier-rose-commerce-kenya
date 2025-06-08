@@ -2,13 +2,26 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { ShoppingCart } from 'lucide-react';
-import { Product } from '@/types';
 import { Button } from '@/components/ui/button';
 import { useCart } from '@/contexts/CartContext';
 import { toast } from '@/hooks/use-toast';
 
 interface ProductCardProps {
-  product: Product;
+  product: {
+    id: string;
+    name: string;
+    price: number;
+    images: string[];
+    category: string;
+    description?: string;
+    original_price?: number;
+    in_stock: boolean;
+    featured: boolean;
+    created_at: string;
+    rating: number;
+    reviews: number;
+    updated_at: string;
+  };
 }
 
 const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
@@ -16,7 +29,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
 
   const handleAddToCart = (e: React.MouseEvent) => {
     e.preventDefault();
-    if (!product.inStock) {
+    if (!product.in_stock) {
       toast({
         title: "Out of Stock",
         description: "This item is currently unavailable.",
@@ -25,7 +38,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
       return;
     }
     
-    dispatch({ type: 'ADD_TO_CART', product });
+    dispatch({ type: 'ADD_TO_CART', payload: product });
     toast({
       title: "Added to Cart",
       description: `${product.name} has been added to your cart.`,
@@ -41,12 +54,12 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
             alt={product.name}
             className="w-full h-64 object-cover transition-transform duration-500 group-hover:scale-110"
           />
-          {product.originalPrice && (
+          {product.original_price && (
             <div className="absolute top-3 left-3 bg-rose-500 text-white px-2 py-1 rounded-full text-xs font-medium">
               Sale
             </div>
           )}
-          {!product.inStock && (
+          {!product.in_stock && (
             <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
               <span className="text-white font-medium">Out of Stock</span>
             </div>
@@ -67,9 +80,9 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
               <span className="text-xl font-semibold text-rose-600">
                 KSh {product.price.toLocaleString()}
               </span>
-              {product.originalPrice && (
+              {product.original_price && (
                 <span className="text-sm text-gray-500 line-through">
-                  KSh {product.originalPrice.toLocaleString()}
+                  KSh {product.original_price.toLocaleString()}
                 </span>
               )}
             </div>
@@ -88,11 +101,11 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
       <div className="px-6 pb-6">
         <Button
           onClick={handleAddToCart}
-          disabled={!product.inStock}
+          disabled={!product.in_stock}
           className="w-full btn-primary flex items-center justify-center space-x-2"
         >
           <ShoppingCart className="h-4 w-4" />
-          <span>{product.inStock ? 'Add to Cart' : 'Out of Stock'}</span>
+          <span>{product.in_stock ? 'Add to Cart' : 'Out of Stock'}</span>
         </Button>
       </div>
     </div>

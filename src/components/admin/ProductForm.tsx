@@ -1,71 +1,92 @@
 
 import React, { useState, useEffect } from 'react';
-import { X, Upload, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { supabase } from '@/integrations/supabase/client';
-import { DatabaseProduct } from '@/types/database';
 import { toast } from '@/hooks/use-toast';
+import { X } from 'lucide-react';
 
-interface ProductFormProps {
-  product: DatabaseProduct | null;
-  onClose: () => void;
-  onSave: () => void;
+interface Product {
+  id: string;
+  name: string;
+  price: number;
+  images: string[];
+  category: string;
+  description?: string;
+  original_price?: number;
+  in_stock: boolean;
+  featured: boolean;
+  created_at: string;
+  rating: number;
+  reviews: number;
+  updated_at: string;
 }
 
-const ProductForm = ({ product, onClose, onSave }: ProductFormProps) => {
+interface ProductFormProps {
+  product?: Product | null;
+  onSave: () => void;
+  onClose: () => void;
+}
+
+const categories = [
+  'Handbags',
+  'Jewelry',
+  'Shoes',
+  'Clothing',
+  'Accessories',
+  'Beauty',
+  'Home & Living'
+];
+
+const ProductForm: React.FC<ProductFormProps> = ({ product, onSave, onClose }) => {
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
     name: '',
-    description: '',
-    price: '',
-    original_price: '',
+    price: 0,
+    original_price: 0,
     category: '',
-    images: [''],
+    description: '',
+    images: [] as string[],
     in_stock: true,
-    featured: false,
+    featured: false
   });
 
   useEffect(() => {
     if (product) {
       setFormData({
         name: product.name,
-        description: product.description || '',
-        price: product.price.toString(),
-        original_price: product.original_price?.toString() || '',
+        price: product.price,
+        original_price: product.original_price || 0,
         category: product.category,
-        images: product.images.length > 0 ? product.images : [''],
+        description: product.description || '',
+        images: product.images || [],
         in_stock: product.in_stock,
-        featured: product.featured,
+        featured: product.featured
       });
     }
   }, [product]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!formData.name || !formData.price || !formData.category) {
-      toast({
-        title: "Validation Error",
-        description: "Please fill in all required fields.",
-        variant: "destructive",
-      });
-      return;
-    }
-
     setLoading(true);
+
     try {
       const productData = {
         name: formData.name,
-        description: formData.description || null,
-        price: parseFloat(formData.price),
-        original_price: formData.original_price ? parseFloat(formData.original_price) : null,
+        price: Number(formData.price),
+        original_price: formData.original_price ? Number(formData.original_price) : null,
         category: formData.category,
-        images: formData.images.filter(img => img.trim() !== ''),
+        description: formData.description,
+        images: formData.images,
         in_stock: formData.in_stock,
         featured: formData.featured,
-        updated_at: new Date().toISOString(),
+        rating: product?.rating || 0,
+        reviews: product?.reviews || 0,
+        updated_at: new Date().toISOString()
       };
 
       if (product) {
@@ -73,19 +94,23 @@ const ProductForm = ({ product, onClose, onSave }: ProductFormProps) => {
           .from('products')
           .update(productData)
           .eq('id', product.id);
+
         if (error) throw error;
+
         toast({
-          title: "Product updated",
-          description: "The product has been successfully updated.",
+          title: "Success",
+          description: "Product updated successfully",
         });
       } else {
         const { error } = await supabase
           .from('products')
-          .insert([productData]);
+          .insert(productData);
+
         if (error) throw error;
+
         toast({
-          title: "Product created",
-          description: "The product has been successfully created.",
+          title: "Success",
+          description: "Product created successfully",
         });
       }
 
@@ -102,69 +127,84 @@ const ProductForm = ({ product, onClose, onSave }: ProductFormProps) => {
     }
   };
 
-  const addImageField = () => {
-    setFormData({
-      ...formData,
-      images: [...formData.images, '']
-    });
+  const addImageUrl = () => {
+    const url = prompt('Enter image URL:');
+    if (url) {
+      setFormData(prev => ({
+        ...prev,
+        images: [...prev.images, url]
+      }));
+    }
   };
 
-  const removeImageField = (index: number) => {
-    const newImages = formData.images.filter((_, i) => i !== index);
-    setFormData({
-      ...formData,
-      images: newImages.length > 0 ? newImages : ['']
-    });
-  };
-
-  const updateImage = (index: number, value: string) => {
-    const newImages = [...formData.images];
-    newImages[index] = value;
-    setFormData({
-      ...formData,
-      images: newImages
-    });
+  const removeImage = (index: number) => {
+    setFormData(prev => ({
+      ...prev,
+      images: prev.images.filter((_, i) => i !== index)
+    }));
   };
 
   return (
-    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-      <div className="luxury-card w-full max-w-2xl max-h-[90vh] overflow-y-auto">
-        <div className="p-6">
-          <div className="flex items-center justify-between mb-6">
-            <h2 className="text-2xl font-light text-gray-800">
+    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+      <Card className="w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+        <CardHeader>
+          <div className="flex justify-between items-center">
+            <CardTitle className="text-pink-800">
               {product ? 'Edit Product' : 'Add New Product'}
-            </h2>
-            <button
-              onClick={onClose}
-              className="text-gray-400 hover:text-gray-600 transition-colors"
-            >
-              <X className="h-5 w-5" />
-            </button>
+            </CardTitle>
+            <Button variant="ghost" onClick={onClose}>
+              <X className="h-4 w-4" />
+            </Button>
           </div>
-
+        </CardHeader>
+        <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <Label htmlFor="name">Product Name *</Label>
-                <Input
-                  id="name"
-                  value={formData.name}
-                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                  placeholder="Enter product name"
-                  required
-                />
-              </div>
+            <div>
+              <Label htmlFor="name">Product Name *</Label>
+              <Input
+                id="name"
+                value={formData.name}
+                onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
+                required
+              />
+            </div>
 
+            <div className="grid grid-cols-2 gap-4">
               <div>
-                <Label htmlFor="category">Category *</Label>
+                <Label htmlFor="price">Price (KSh) *</Label>
                 <Input
-                  id="category"
-                  value={formData.category}
-                  onChange={(e) => setFormData({ ...formData, category: e.target.value })}
-                  placeholder="e.g., Handbags, Jewelry"
+                  id="price"
+                  type="number"
+                  value={formData.price}
+                  onChange={(e) => setFormData(prev => ({ ...prev, price: Number(e.target.value) }))}
                   required
                 />
               </div>
+              <div>
+                <Label htmlFor="original_price">Original Price (KSh)</Label>
+                <Input
+                  id="original_price"
+                  type="number"
+                  value={formData.original_price}
+                  onChange={(e) => setFormData(prev => ({ ...prev, original_price: Number(e.target.value) }))}
+                />
+              </div>
+            </div>
+
+            <div>
+              <Label htmlFor="category">Category *</Label>
+              <Select value={formData.category} onValueChange={(value) => setFormData(prev => ({ ...prev, category: value }))}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select a category" />
+                </SelectTrigger>
+                <SelectContent>
+                  {categories.map((category) => (
+                    <SelectItem key={category} value={category}>
+                      {category}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
 
             <div>
@@ -172,37 +212,9 @@ const ProductForm = ({ product, onClose, onSave }: ProductFormProps) => {
               <Textarea
                 id="description"
                 value={formData.description}
-                onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                placeholder="Enter product description"
+                onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
                 rows={3}
               />
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <Label htmlFor="price">Price (KSh) *</Label>
-                <Input
-                  id="price"
-                  type="number"
-                  step="0.01"
-                  value={formData.price}
-                  onChange={(e) => setFormData({ ...formData, price: e.target.value })}
-                  placeholder="0.00"
-                  required
-                />
-              </div>
-
-              <div>
-                <Label htmlFor="original_price">Original Price (KSh)</Label>
-                <Input
-                  id="original_price"
-                  type="number"
-                  step="0.01"
-                  value={formData.original_price}
-                  onChange={(e) => setFormData({ ...formData, original_price: e.target.value })}
-                  placeholder="0.00"
-                />
-              </div>
             </div>
 
             <div>
@@ -210,78 +222,49 @@ const ProductForm = ({ product, onClose, onSave }: ProductFormProps) => {
               <div className="space-y-2">
                 {formData.images.map((image, index) => (
                   <div key={index} className="flex items-center space-x-2">
-                    <Input
-                      value={image}
-                      onChange={(e) => updateImage(index, e.target.value)}
-                      placeholder="Enter image URL"
-                      className="flex-1"
-                    />
-                    {formData.images.length > 1 && (
-                      <Button
-                        type="button"
-                        variant="outline"
-                        size="sm"
-                        onClick={() => removeImageField(index)}
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    )}
+                    <img src={image} alt={`Product ${index + 1}`} className="w-16 h-16 object-cover rounded" />
+                    <Input value={image} readOnly className="flex-1" />
+                    <Button type="button" variant="outline" onClick={() => removeImage(index)}>
+                      <X className="h-4 w-4" />
+                    </Button>
                   </div>
                 ))}
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={addImageField}
-                  className="flex items-center space-x-2"
-                >
-                  <Upload className="h-4 w-4" />
-                  <span>Add Image</span>
+                <Button type="button" variant="outline" onClick={addImageUrl}>
+                  Add Image URL
                 </Button>
               </div>
             </div>
 
-            <div className="flex items-center space-x-6">
+            <div className="flex items-center space-x-4">
               <label className="flex items-center space-x-2">
                 <input
                   type="checkbox"
                   checked={formData.in_stock}
-                  onChange={(e) => setFormData({ ...formData, in_stock: e.target.checked })}
-                  className="rounded border-gray-300 text-rose-600 focus:ring-rose-500"
+                  onChange={(e) => setFormData(prev => ({ ...prev, in_stock: e.target.checked }))}
                 />
-                <span className="text-sm font-medium text-gray-700">In Stock</span>
+                <span>In Stock</span>
               </label>
-
               <label className="flex items-center space-x-2">
                 <input
                   type="checkbox"
                   checked={formData.featured}
-                  onChange={(e) => setFormData({ ...formData, featured: e.target.checked })}
-                  className="rounded border-gray-300 text-rose-600 focus:ring-rose-500"
+                  onChange={(e) => setFormData(prev => ({ ...prev, featured: e.target.checked }))}
                 />
-                <span className="text-sm font-medium text-gray-700">Featured Product</span>
+                <span>Featured Product</span>
               </label>
             </div>
 
-            <div className="flex items-center space-x-4 pt-4">
-              <Button
-                type="submit"
-                disabled={loading}
-                className="btn-primary flex-1"
-              >
-                {loading ? 'Saving...' : product ? 'Update Product' : 'Create Product'}
+            <div className="flex space-x-2 pt-4">
+              <Button type="submit" disabled={loading} className="bg-pink-500 hover:bg-pink-600">
+                {loading ? 'Saving...' : (product ? 'Update Product' : 'Add Product')}
               </Button>
-              <Button
-                type="button"
-                variant="outline"
-                onClick={onClose}
-                className="flex-1"
-              >
+              <Button type="button" variant="outline" onClick={onClose}>
                 Cancel
               </Button>
             </div>
           </form>
-        </div>
-      </div>
+        </CardContent>
+      </Card>
     </div>
   );
 };

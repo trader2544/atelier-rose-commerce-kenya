@@ -9,6 +9,33 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      mpesa_transactions: {
+        Row: {
+          amount: number | null
+          created_at: string | null
+          id: string
+          phone_number: string | null
+          status: string | null
+          transaction_id: string | null
+        }
+        Insert: {
+          amount?: number | null
+          created_at?: string | null
+          id?: string
+          phone_number?: string | null
+          status?: string | null
+          transaction_id?: string | null
+        }
+        Update: {
+          amount?: number | null
+          created_at?: string | null
+          id?: string
+          phone_number?: string | null
+          status?: string | null
+          transaction_id?: string | null
+        }
+        Relationships: []
+      }
       order_items: {
         Row: {
           created_at: string | null

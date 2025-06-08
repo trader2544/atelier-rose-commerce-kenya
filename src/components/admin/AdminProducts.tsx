@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
-import { Plus, Edit, Trash2, Eye } from 'lucide-react';
+import { Plus, Edit, Trash2 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -19,6 +19,9 @@ interface Product {
   in_stock: boolean;
   featured: boolean;
   created_at: string;
+  rating: number;
+  reviews: number;
+  updated_at: string;
 }
 
 const AdminProducts = () => {
@@ -97,12 +100,12 @@ const AdminProducts = () => {
 
   if (loading) {
     return (
-      <div className="p-3 sm:p-6">
+      <div className="p-6">
         <div className="animate-pulse space-y-4">
-          <div className="h-6 sm:h-8 bg-gray-200 rounded w-1/4"></div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-6">
+          <div className="h-8 bg-gray-200 rounded w-1/4"></div>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {[...Array(6)].map((_, i) => (
-              <div key={i} className="h-64 sm:h-80 bg-gray-200 rounded"></div>
+              <div key={i} className="h-80 bg-gray-200 rounded"></div>
             ))}
           </div>
         </div>
@@ -112,28 +115,28 @@ const AdminProducts = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-pink-50 via-white to-purple-50">
-      <div className="p-3 sm:p-6">
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 sm:mb-6 gap-3">
-          <h2 className="text-xl sm:text-2xl font-light text-gray-800">Product Management</h2>
+      <div className="p-6">
+        <div className="flex justify-between items-center mb-6">
+          <h2 className="text-2xl font-light text-gray-800">Product Management</h2>
           <Button 
             onClick={() => setShowForm(true)} 
-            className="bg-pink-600 hover:bg-pink-700 text-white w-full sm:w-auto text-sm"
+            className="bg-pink-600 hover:bg-pink-700 text-white"
           >
-            <Plus className="h-3 w-3 sm:h-4 sm:w-4 mr-2" />
+            <Plus className="h-4 w-4 mr-2" />
             Add Product
           </Button>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {products.map((product) => (
             <Card key={product.id} className="luxury-card group">
-              <CardHeader className="pb-2 sm:pb-3">
+              <CardHeader className="pb-3">
                 <div className="relative">
                   {product.images && product.images.length > 0 && (
                     <img
                       src={product.images[0]}
                       alt={product.name}
-                      className="w-full h-32 sm:h-48 object-cover rounded-lg mb-2 sm:mb-3"
+                      className="w-full h-48 object-cover rounded-lg mb-3"
                     />
                   )}
                   <div className="absolute top-2 right-2 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
@@ -144,7 +147,7 @@ const AdminProducts = () => {
                         setEditingProduct(product);
                         setShowForm(true);
                       }}
-                      className="bg-white/90 hover:bg-white border-pink-200 h-7 w-7 sm:h-8 sm:w-8 p-0"
+                      className="bg-white/90 hover:bg-white border-pink-200 h-8 w-8 p-0"
                     >
                       <Edit className="h-3 w-3" />
                     </Button>
@@ -152,32 +155,32 @@ const AdminProducts = () => {
                       size="sm"
                       variant="outline"
                       onClick={() => handleDelete(product.id)}
-                      className="bg-white/90 hover:bg-white border-red-200 text-red-600 hover:text-red-700 h-7 w-7 sm:h-8 sm:w-8 p-0"
+                      className="bg-white/90 hover:bg-white border-red-200 text-red-600 hover:text-red-700 h-8 w-8 p-0"
                     >
                       <Trash2 className="h-3 w-3" />
                     </Button>
                   </div>
                 </div>
-                <CardTitle className="text-pink-800 text-sm sm:text-lg line-clamp-2">{product.name}</CardTitle>
-                <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-1 sm:gap-0">
-                  <p className="text-lg sm:text-xl font-semibold text-pink-600">
+                <CardTitle className="text-pink-800 text-lg line-clamp-2">{product.name}</CardTitle>
+                <div className="flex justify-between items-center">
+                  <p className="text-xl font-semibold text-pink-600">
                     KSh {product.price.toLocaleString()}
                   </p>
                   <div className="flex gap-1">
-                    <Badge className={product.in_stock ? 'bg-green-100 text-green-800 text-xs' : 'bg-red-100 text-red-800 text-xs'}>
+                    <Badge className={product.in_stock ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}>
                       {product.in_stock ? 'In Stock' : 'Out of Stock'}
                     </Badge>
                     {product.featured && (
-                      <Badge className="bg-pink-100 text-pink-800 text-xs">Featured</Badge>
+                      <Badge className="bg-pink-100 text-pink-800">Featured</Badge>
                     )}
                   </div>
                 </div>
               </CardHeader>
               <CardContent className="pt-0">
-                <p className="text-gray-600 text-xs sm:text-sm line-clamp-2 mb-2 sm:mb-3">
+                <p className="text-gray-600 text-sm line-clamp-2 mb-3">
                   {product.description}
                 </p>
-                <div className="flex justify-between items-center text-xs sm:text-sm text-gray-500">
+                <div className="flex justify-between items-center text-sm text-gray-500">
                   <span>Category: {product.category}</span>
                 </div>
               </CardContent>
@@ -187,7 +190,7 @@ const AdminProducts = () => {
 
         {products.length === 0 && !loading && (
           <div className="text-center py-16">
-            <p className="text-gray-600 text-sm sm:text-base">No products found. Add your first product!</p>
+            <p className="text-gray-600">No products found. Add your first product!</p>
           </div>
         )}
 

@@ -29,75 +29,33 @@ serve(async (req) => {
     }
 
     const checkoutRequestId = stkCallback.CheckoutRequestID
-    const merchantRequestId = stkCallback.MerchantRequestID
     const resultCode = stkCallback.ResultCode
-    const resultDesc = stkCallback.ResultDesc
-
-    // Update transaction status
-    const updateData: any = {
-      result_code: resultCode,
-      result_desc: resultDesc,
-      callback_data: callbackData,
-      updated_at: new Date().toISOString()
-    }
 
     if (resultCode === 0) {
       // Payment successful
-      updateData.status = 'completed'
-      
-      // Extract payment details
       const callbackMetadata = stkCallback.CallbackMetadata?.Item || []
       const amountPaid = callbackMetadata.find((item: any) => item.Name === 'Amount')?.Value
       const mpesaReceiptNumber = callbackMetadata.find((item: any) => item.Name === 'MpesaReceiptNumber')?.Value
-      const transactionDate = callbackMetadata.find((item: any) => item.Name === 'TransactionDate')?.Value
-      const phoneNumber = callbackMetadata.find((item: any) => item.Name === 'PhoneNumber')?.Value
 
-      updateData.amount_paid = amountPaid
-      updateData.mpesa_receipt_number = mpesaReceiptNumber
-      updateData.transaction_date = transactionDate
-      updateData.phone_number = phoneNumber
-
-      // Update the transaction record
-      const { data: transaction, error: updateError } = await supabase
-        .from('mpesa_transactions')
-        .update(updateData)
-        .eq('checkout_request_id', checkoutRequestId)
-        .select('order_id')
-        .single()
-
-      if (updateError) {
-        console.error('Error updating transaction:', updateError)
-        throw updateError
-      }
-
-      // Update the order payment status
-      if (transaction?.order_id) {
-        const { error: orderError } = await supabase
-          .from('orders')
-          .update({ 
-            payment_status: 'paid',
-            status: 'processing'
-          })
-          .eq('id', transaction.order_id)
-
-        if (orderError) {
-          console.error('Error updating order:', orderError)
-        } else {
-          console.log('Order payment status updated successfully')
-        }
-      }
-
-    } else {
-      // Payment failed
-      updateData.status = 'failed'
-      
+      // Update transaction status
       await supabase
         .from('mpesa_transactions')
-        .update(updateData)
-        .eq('checkout_request_id', checkoutRequestId)
-    }
+        .update({ 
+          status: 'completed',
+          transaction_id: mpesaReceiptNumber || checkoutRequestId
+        })
+        .eq('transaction_id', checkoutRequestId)
 
-    console.log('Transaction updated successfully')
+      console.log('Transaction completed successfully')
+    } else {
+      // Payment failed
+      await supabase
+        .from('mpesa_transactions')
+        .update({ status: 'failed' })
+        .eq('transaction_id', checkoutRequestId)
+
+      console.log('Transaction failed')
+    }
 
     return new Response(
       JSON.stringify({ success: true }),

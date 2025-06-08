@@ -90,15 +90,13 @@ serve(async (req) => {
       // Success - store transaction details
       const supabase = createClient(
         Deno.env.get('SUPABASE_URL') ?? '',
-        Deno.env.get('SUPABASE_ANON_KEY') ?? ''
+        Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
       )
 
       await supabase
         .from('mpesa_transactions')
         .insert({
-          order_id: orderId,
-          checkout_request_id: stkResult.CheckoutRequestID,
-          merchant_request_id: stkResult.MerchantRequestID,
+          transaction_id: stkResult.CheckoutRequestID,
           phone_number: formattedPhone,
           amount: amount,
           status: 'pending'

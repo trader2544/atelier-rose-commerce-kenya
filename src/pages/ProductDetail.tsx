@@ -1,18 +1,69 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { ArrowLeft, ShoppingCart } from 'lucide-react';
-import { products } from '@/data/products';
 import { Button } from '@/components/ui/button';
 import { useCart } from '@/contexts/CartContext';
 import { toast } from '@/hooks/use-toast';
+import { supabase } from '@/integrations/supabase/client';
+
+interface Product {
+  id: string;
+  name: string;
+  price: number;
+  images: string[];
+  category: string;
+  description?: string;
+  original_price?: number;
+  in_stock: boolean;
+  featured: boolean;
+  created_at: string;
+  rating: number;
+  reviews: number;
+  updated_at: string;
+}
 
 const ProductDetail = () => {
   const { id } = useParams<{ id: string }>();
   const { dispatch } = useCart();
   const [selectedImage, setSelectedImage] = useState(0);
-  
-  const product = products.find(p => p.id === id);
+  const [product, setProduct] = useState<Product | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchProduct = async () => {
+      if (!id) return;
+
+      try {
+        const { data, error } = await supabase
+          .from('products')
+          .select('*')
+          .eq('id', id)
+          .single();
+
+        if (error) {
+          console.error('Error fetching product:', error);
+          return;
+        }
+
+        setProduct(data);
+      } catch (error) {
+        console.error('Error fetching product:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchProduct();
+  }, [id]);
+
+  if (loading) {
+    return (
+      <div className="min-h-screen pt-20 pb-16 flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-pink-500"></div>
+      </div>
+    );
+  }
 
   if (!product) {
     return (
@@ -30,7 +81,7 @@ const ProductDetail = () => {
   }
 
   const handleAddToCart = () => {
-    if (!product.inStock) {
+    if (!product.in_stock) {
       toast({
         title: "Out of Stock",
         description: "This item is currently unavailable.",
@@ -39,7 +90,7 @@ const ProductDetail = () => {
       return;
     }
     
-    dispatch({ type: 'ADD_TO_CART', product });
+    dispatch({ type: 'ADD_TO_CART', payload: product });
     toast({
       title: "Added to Cart",
       description: `${product.name} has been added to your cart.`,
@@ -49,14 +100,12 @@ const ProductDetail = () => {
   return (
     <div className="min-h-screen pt-20 pb-16">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        {/* Back Button */}
         <Link to="/shop" className="inline-flex items-center space-x-2 text-gray-600 hover:text-rose-600 mb-8 transition-colors">
           <ArrowLeft className="h-4 w-4" />
           <span>Back to Shop</span>
         </Link>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
-          {/* Product Images */}
           <div className="space-y-4">
             <div className="luxury-card overflow-hidden">
               <img
@@ -87,7 +136,6 @@ const ProductDetail = () => {
             )}
           </div>
 
-          {/* Product Info */}
           <div className="space-y-6">
             <div>
               <h1 className="text-3xl lg:text-4xl font-light text-gray-800 mb-2">
@@ -98,7 +146,6 @@ const ProductDetail = () => {
               </p>
             </div>
 
-            {/* Rating */}
             {product.rating && (
               <div className="flex items-center space-x-2">
                 <div className="flex text-yellow-400">
@@ -114,26 +161,23 @@ const ProductDetail = () => {
               </div>
             )}
 
-            {/* Price */}
             <div className="flex items-center space-x-3">
               <span className="text-3xl font-semibold text-rose-600">
                 KSh {product.price.toLocaleString()}
               </span>
-              {product.originalPrice && (
+              {product.original_price && (
                 <span className="text-xl text-gray-500 line-through">
-                  KSh {product.originalPrice.toLocaleString()}
+                  KSh {product.original_price.toLocaleString()}
                 </span>
               )}
             </div>
 
-            {/* Stock Status */}
             <div className={`inline-block px-3 py-1 rounded-full text-sm font-medium ${
-              product.inStock ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+              product.in_stock ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
             }`}>
-              {product.inStock ? 'In Stock' : 'Out of Stock'}
+              {product.in_stock ? 'In Stock' : 'Out of Stock'}
             </div>
 
-            {/* Description */}
             <div>
               <h3 className="text-lg font-medium text-gray-800 mb-2">Description</h3>
               <p className="text-gray-600 leading-relaxed">
@@ -141,17 +185,15 @@ const ProductDetail = () => {
               </p>
             </div>
 
-            {/* Add to Cart Button */}
             <Button
               onClick={handleAddToCart}
-              disabled={!product.inStock}
+              disabled={!product.in_stock}
               className="w-full btn-primary flex items-center justify-center space-x-2 text-lg py-4"
             >
               <ShoppingCart className="h-5 w-5" />
-              <span>{product.inStock ? 'Add to Cart' : 'Out of Stock'}</span>
+              <span>{product.in_stock ? 'Add to Cart' : 'Out of Stock'}</span>
             </Button>
 
-            {/* Additional Info */}
             <div className="border-t pt-6 space-y-3 text-sm text-gray-600">
               <p>• Free delivery for orders over KSh 10,000</p>
               <p>• 30-day return policy</p>
