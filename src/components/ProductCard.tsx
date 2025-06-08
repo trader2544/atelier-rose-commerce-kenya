@@ -11,7 +11,7 @@ interface ProductCardProps {
     id: string;
     name: string;
     price: number;
-    images: string[];
+    images: string[] | null;
     category: string;
     description?: string;
     original_price?: number;
@@ -45,14 +45,26 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
     });
   };
 
+  // Safely get the first image or use placeholder
+  const getProductImage = () => {
+    if (product.images && product.images.length > 0) {
+      return product.images[0];
+    }
+    return '/placeholder.svg';
+  };
+
   return (
     <div className="luxury-card group overflow-hidden">
       <Link to={`/product/${product.id}`}>
         <div className="relative overflow-hidden">
           <img
-            src={product.images[0]}
+            src={getProductImage()}
             alt={product.name}
             className="w-full h-64 object-cover transition-transform duration-500 group-hover:scale-110"
+            onError={(e) => {
+              const target = e.target as HTMLImageElement;
+              target.src = '/placeholder.svg';
+            }}
           />
           {product.original_price && (
             <div className="absolute top-3 left-3 bg-rose-500 text-white px-2 py-1 rounded-full text-xs font-medium">
@@ -72,7 +84,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
           </h3>
           
           <p className="text-gray-600 text-sm mb-3 line-clamp-2">
-            {product.description}
+            {product.description || 'No description available'}
           </p>
           
           <div className="flex items-center justify-between mb-4">
@@ -87,7 +99,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
               )}
             </div>
             
-            {product.rating && (
+            {product.rating && product.rating > 0 && (
               <div className="flex items-center space-x-1 text-sm text-gray-600">
                 <span>★</span>
                 <span>{product.rating}</span>
