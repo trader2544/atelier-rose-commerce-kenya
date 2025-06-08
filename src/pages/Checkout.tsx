@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useCart } from '@/contexts/CartContext';
@@ -202,6 +201,13 @@ const Checkout = () => {
     }
   };
 
+  const getProductImage = (product: any) => {
+    if (product.images && product.images.length > 0) {
+      return product.images[0];
+    }
+    return '/placeholder.svg';
+  };
+
   if (state.items.length === 0) {
     return null;
   }
@@ -317,9 +323,13 @@ const Checkout = () => {
               {state.items.map((item) => (
                 <div key={item.id} className="flex items-center space-x-3 p-3 bg-pink-50 rounded-lg">
                   <img
-                    src={item.product.images[0]}
+                    src={getProductImage(item.product)}
                     alt={item.product.name}
                     className="w-12 h-12 sm:w-16 sm:h-16 object-cover rounded-lg"
+                    onError={(e) => {
+                      const target = e.target as HTMLImageElement;
+                      target.src = '/placeholder.svg';
+                    }}
                   />
                   <div className="flex-1 min-w-0">
                     <p className="font-medium text-gray-800 text-sm truncate">{item.product.name}</p>
