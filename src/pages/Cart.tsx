@@ -49,9 +49,13 @@ const Cart = () => {
               <div key={item.id} className="glassmorphic">
                 <div className="flex items-center p-4 sm:p-6">
                   <img
-                    src={item.product.images[0]}
+                    src={item.product.images && item.product.images.length > 0 ? item.product.images[0] : '/placeholder.svg'}
                     alt={item.product.name}
                     className="w-16 h-16 sm:w-20 sm:h-20 object-cover rounded-lg flex-shrink-0"
+                    onError={(e) => {
+                      const target = e.target as HTMLImageElement;
+                      target.src = '/placeholder.svg';
+                    }}
                   />
                   
                   <div className="flex-1 ml-3 sm:ml-4 min-w-0">

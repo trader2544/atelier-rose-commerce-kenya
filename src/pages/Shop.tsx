@@ -20,6 +20,11 @@ interface Product {
   description?: string;
   original_price?: number;
   in_stock: boolean;
+  featured: boolean;
+  created_at: string;
+  rating: number;
+  reviews: number;
+  updated_at: string;
 }
 
 const Shop = () => {
@@ -35,6 +40,7 @@ const Shop = () => {
   const fetchProducts = async () => {
     try {
       setLoading(true);
+      console.log('Fetching products...');
       const { data, error } = await supabase
         .from('products')
         .select('*')
@@ -51,6 +57,7 @@ const Shop = () => {
         return;
       }
 
+      console.log('Products fetched:', data);
       setProducts(data || []);
       setFilteredProducts(data || []);
     } catch (error) {

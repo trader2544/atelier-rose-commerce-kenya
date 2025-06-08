@@ -10,7 +10,10 @@ import UserMenu from './UserMenu';
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
   const { state } = useCart();
-  const { user, isAdmin } = useAuth();
+  const { user, profile } = useAuth();
+
+  // Check if user is admin
+  const isAdmin = profile?.role === 'admin';
 
   const toggleMenu = () => {
     setIsOpen(!isOpen);

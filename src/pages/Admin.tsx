@@ -9,7 +9,7 @@ import AdminProducts from '@/components/admin/AdminProducts';
 import AdminOrders from '@/components/admin/AdminOrders';
 
 const Admin = () => {
-  const { user, isAdmin, loading } = useAuth();
+  const { user, profile, loading } = useAuth();
   const [activeTab, setActiveTab] = useState('overview');
   const [stats, setStats] = useState({
     totalProducts: 0,
@@ -18,6 +18,9 @@ const Admin = () => {
     recentOrders: []
   });
   const [statsLoading, setStatsLoading] = useState(true);
+
+  // Check if user is admin
+  const isAdmin = profile?.role === 'admin';
 
   const fetchStats = async () => {
     try {
