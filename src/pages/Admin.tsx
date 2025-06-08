@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -7,6 +8,18 @@ import { supabase } from '@/integrations/supabase/client';
 import AdminProducts from '@/components/admin/AdminProducts';
 import AdminOrders from '@/components/admin/AdminOrders';
 
+interface RecentOrder {
+  id: string;
+  total: number;
+  status: string;
+  created_at: string;
+  user_id: string;
+  shipping_address: {
+    name?: string;
+    email?: string;
+  };
+}
+
 const Admin = () => {
   const { user, isAdmin, loading } = useAuth();
   const [activeTab, setActiveTab] = useState('overview');
@@ -14,7 +27,7 @@ const Admin = () => {
     totalProducts: 0,
     totalOrders: 0,
     revenue: 0,
-    recentOrders: []
+    recentOrders: [] as RecentOrder[]
   });
   const [statsLoading, setStatsLoading] = useState(true);
 
@@ -53,7 +66,7 @@ const Admin = () => {
 
       const revenue = ordersData?.reduce((sum, order) => sum + Number(order.total), 0) || 0;
 
-      // Fetch recent orders
+      // Fetch recent orders with proper typing
       const { data: recentOrdersData, error: recentOrdersError } = await supabase
         .from('orders')
         .select('id, total, status, created_at, user_id, shipping_address')
@@ -64,25 +77,36 @@ const Admin = () => {
         console.error('Recent orders error:', recentOrdersError);
       }
 
-      // Extract customer info from shipping_address
-      const enrichedRecentOrders = (recentOrdersData || []).map(order => ({
-        ...order,
-        customer_name: order.shipping_address?.name || 'Unknown',
-        customer_email: order.shipping_address?.email || 'Unknown'
-      }));
+      // Process recent orders with proper type handling
+      const processedRecentOrders: RecentOrder[] = (recentOrdersData || []).map(order => {
+        let shippingAddress = { name: 'Unknown', email: 'Unknown' };
+        
+        if (order.shipping_address && typeof order.shipping_address === 'object') {
+          const addr = order.shipping_address as Record<string, any>;
+          shippingAddress = {
+            name: addr.name || 'Unknown',
+            email: addr.email || 'Unknown'
+          };
+        }
+
+        return {
+          ...order,
+          shipping_address: shippingAddress
+        };
+      });
 
       console.log('Stats fetched:', { 
         products: productsCount, 
         orders: ordersCount, 
         revenue, 
-        recentOrders: enrichedRecentOrders.length 
+        recentOrders: processedRecentOrders.length 
       });
 
       setStats({
         totalProducts: productsCount || 0,
         totalOrders: ordersCount || 0,
         revenue,
-        recentOrders: enrichedRecentOrders
+        recentOrders: processedRecentOrders
       });
     } catch (error) {
       console.error('Error fetching stats:', error);
@@ -92,10 +116,11 @@ const Admin = () => {
   };
 
   useEffect(() => {
-    if (isAdmin) {
+    if (isAdmin && user) {
+      console.log('User is admin, fetching stats...');
       fetchStats();
     }
-  }, [isAdmin]);
+  }, [isAdmin, user]);
 
   if (loading) {
     return (
@@ -208,11 +233,13 @@ const Admin = () => {
                   </CardHeader>
                   <CardContent>
                     <div className="space-y-2 sm:space-y-4">
-                      {stats.recentOrders.map((order: any) => (
+                      {stats.recentOrders.map((order) => (
                         <div key={order.id} className="flex items-center justify-between p-2 sm:p-3 bg-white/50 rounded-lg">
                           <div className="flex-1 min-w-0">
                             <p className="font-medium text-gray-800 text-xs sm:text-sm">Order #{order.id.slice(0, 8)}</p>
-                            <p className="text-xs sm:text-sm text-gray-600 truncate">{order.customer_name || order.customer_email}</p>
+                            <p className="text-xs sm:text-sm text-gray-600 truncate">
+                              {order.shipping_address?.name || order.shipping_address?.email || 'Unknown Customer'}
+                            </p>
                           </div>
                           <div className="text-right">
                             <p className="font-semibold text-pink-600 text-xs sm:text-sm">KSh {Number(order.total).toLocaleString()}</p>
