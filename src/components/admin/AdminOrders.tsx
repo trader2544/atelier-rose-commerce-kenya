@@ -1,7 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
 import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { supabase } from '@/integrations/supabase/client';
@@ -96,12 +95,12 @@ const AdminOrders = () => {
 
   if (loading) {
     return (
-      <div className="p-6">
+      <div className="p-3 sm:p-6">
         <div className="animate-pulse space-y-4">
           <div className="h-8 bg-gray-200 rounded w-1/4"></div>
           <div className="space-y-3">
             {[...Array(5)].map((_, i) => (
-              <div key={i} className="h-24 bg-gray-200 rounded"></div>
+              <div key={i} className="h-20 sm:h-24 bg-gray-200 rounded"></div>
             ))}
           </div>
         </div>
@@ -110,76 +109,74 @@ const AdminOrders = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-pink-50 via-white to-purple-50">
-      <div className="p-6">
-        <h2 className="text-2xl font-light text-gray-800 mb-6">Order Management</h2>
+    <div className="p-3 sm:p-6">
+      <h2 className="text-lg sm:text-xl font-light text-gray-800 mb-4 sm:mb-6">Order Management</h2>
 
-        <div className="space-y-4">
-          {orders.map((order) => (
-            <Card key={order.id} className="luxury-card">
-              <CardHeader>
-                <div className="flex justify-between items-start">
-                  <div>
-                    <CardTitle className="text-pink-800">Order #{order.id.slice(0, 8)}</CardTitle>
-                    <p className="text-sm text-gray-600 mt-1">
-                      Placed on {new Date(order.created_at).toLocaleDateString()}
-                    </p>
+      <div className="space-y-3 sm:space-y-4">
+        {orders.map((order) => (
+          <Card key={order.id} className="hover:shadow-md transition-shadow">
+            <CardHeader className="pb-2 sm:pb-3">
+              <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-3">
+                <div className="flex-1 min-w-0">
+                  <CardTitle className="text-pink-800 text-sm sm:text-base">Order #{order.id.slice(0, 8)}</CardTitle>
+                  <p className="text-xs sm:text-sm text-gray-600 mt-1">
+                    Placed on {new Date(order.created_at).toLocaleDateString()}
+                  </p>
+                </div>
+                <div className="text-left sm:text-right">
+                  <p className="text-base sm:text-lg font-semibold text-pink-600">
+                    KSh {Number(order.total).toLocaleString()}
+                  </p>
+                  <Badge className={`mt-1 text-xs ${getStatusColor(order.status)}`}>
+                    {order.status}
+                  </Badge>
+                </div>
+              </div>
+            </CardHeader>
+            <CardContent className="pt-0">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+                <div>
+                  <h4 className="font-medium text-gray-800 mb-2 text-sm sm:text-base">Customer Information:</h4>
+                  <div className="text-xs sm:text-sm text-gray-600 space-y-1">
+                    <p>Name: {order.shipping_address?.name || 'N/A'}</p>
+                    <p>Phone: {order.shipping_address?.phone || 'N/A'}</p>
+                    <p>Email: {order.shipping_address?.email || 'N/A'}</p>
+                    <p className="truncate">Address: {order.shipping_address?.street || 'N/A'}, {order.shipping_address?.city || 'N/A'}</p>
                   </div>
-                  <div className="text-right">
-                    <p className="text-lg font-semibold text-pink-600">
-                      KSh {Number(order.total).toLocaleString()}
-                    </p>
-                    <Badge className={getStatusColor(order.status)}>
-                      {order.status}
+                </div>
+                
+                <div>
+                  <h4 className="font-medium text-gray-800 mb-2 text-sm sm:text-base">Order Status:</h4>
+                  <Select value={order.status} onValueChange={(value) => updateOrderStatus(order.id, value)}>
+                    <SelectTrigger className="w-full text-sm">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="pending">Pending</SelectItem>
+                      <SelectItem value="processing">Processing</SelectItem>
+                      <SelectItem value="shipped">Shipped</SelectItem>
+                      <SelectItem value="delivered">Delivered</SelectItem>
+                      <SelectItem value="cancelled">Cancelled</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  
+                  <div className="mt-2">
+                    <Badge className={`text-xs ${order.payment_status === 'paid' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'}`}>
+                      Payment: {order.payment_status}
                     </Badge>
                   </div>
                 </div>
-              </CardHeader>
-              <CardContent>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <h4 className="font-medium text-gray-800 mb-2">Customer Information:</h4>
-                    <div className="text-sm text-gray-600 space-y-1">
-                      <p>Name: {order.shipping_address?.name || 'N/A'}</p>
-                      <p>Phone: {order.shipping_address?.phone || 'N/A'}</p>
-                      <p>Email: {order.shipping_address?.email || 'N/A'}</p>
-                      <p>Address: {order.shipping_address?.street || 'N/A'}, {order.shipping_address?.city || 'N/A'}</p>
-                    </div>
-                  </div>
-                  
-                  <div>
-                    <h4 className="font-medium text-gray-800 mb-2">Order Status:</h4>
-                    <Select value={order.status} onValueChange={(value) => updateOrderStatus(order.id, value)}>
-                      <SelectTrigger className="w-full">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="pending">Pending</SelectItem>
-                        <SelectItem value="processing">Processing</SelectItem>
-                        <SelectItem value="shipped">Shipped</SelectItem>
-                        <SelectItem value="delivered">Delivered</SelectItem>
-                        <SelectItem value="cancelled">Cancelled</SelectItem>
-                      </SelectContent>
-                    </Select>
-                    
-                    <div className="mt-2">
-                      <Badge className={order.payment_status === 'paid' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'}>
-                        Payment: {order.payment_status}
-                      </Badge>
-                    </div>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-
-        {orders.length === 0 && (
-          <div className="text-center py-16">
-            <p className="text-gray-600">No orders found.</p>
-          </div>
-        )}
+              </div>
+            </CardContent>
+          </Card>
+        ))}
       </div>
+
+      {orders.length === 0 && (
+        <div className="text-center py-12 sm:py-16">
+          <p className="text-gray-600 text-sm sm:text-base">No orders found.</p>
+        </div>
+      )}
     </div>
   );
 };
