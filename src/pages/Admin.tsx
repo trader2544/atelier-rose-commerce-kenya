@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -36,6 +35,13 @@ const Admin = () => {
       setStatsLoading(true);
       console.log('Fetching admin stats...');
       
+      // Ensure user is authenticated and is admin
+      const { data: { user: currentUser } } = await supabase.auth.getUser();
+      if (!currentUser || !isAdmin) {
+        console.log('User not authenticated or not admin');
+        return;
+      }
+
       // Fetch total products
       const { count: productsCount, error: productsError } = await supabase
         .from('products')
@@ -43,6 +49,8 @@ const Admin = () => {
 
       if (productsError) {
         console.error('Products count error:', productsError);
+      } else {
+        console.log('Products count:', productsCount);
       }
 
       // Fetch total orders
@@ -52,6 +60,8 @@ const Admin = () => {
 
       if (ordersError) {
         console.error('Orders count error:', ordersError);
+      } else {
+        console.log('Orders count:', ordersCount);
       }
 
       // Fetch revenue from completed orders
@@ -62,11 +72,13 @@ const Admin = () => {
 
       if (revenueError) {
         console.error('Revenue error:', revenueError);
+      } else {
+        console.log('Revenue orders:', ordersData);
       }
 
       const revenue = ordersData?.reduce((sum, order) => sum + Number(order.total), 0) || 0;
 
-      // Fetch recent orders with proper typing
+      // Fetch recent orders
       const { data: recentOrdersData, error: recentOrdersError } = await supabase
         .from('orders')
         .select('id, total, status, created_at, user_id, shipping_address')
@@ -75,6 +87,8 @@ const Admin = () => {
 
       if (recentOrdersError) {
         console.error('Recent orders error:', recentOrdersError);
+      } else {
+        console.log('Recent orders:', recentOrdersData);
       }
 
       // Process recent orders with proper type handling
@@ -95,7 +109,7 @@ const Admin = () => {
         };
       });
 
-      console.log('Stats fetched:', { 
+      console.log('Final stats:', { 
         products: productsCount, 
         orders: ordersCount, 
         revenue, 
