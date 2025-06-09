@@ -1,3 +1,4 @@
+
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
 @tailwind base;
 @tailwind components;
@@ -32,30 +33,25 @@
 }
 
 .dark {
-  --background: 240 10% 3.9%;
-  --foreground: 0 0% 98%;
-  --card: 240 10% 3.9%;
-  --card-foreground: 0 0% 98%;
-  --popover: 240 10% 3.9%;
-  --popover-foreground: 0 0% 98%;
+  --background: 20 14.3% 4.1%;
+  --foreground: 0 0% 95%;
+  --card: 20 14.3% 4.1%;
+  --card-foreground: 0 0% 95%;
+  --popover: 20 14.3% 4.1%;
+  --popover-foreground: 0 0% 95%;
   --primary: 349 100% 70%;
   --primary-foreground: 355.7 100% 97.3%;
-  --secondary: 240 3.7% 15.9%;
+  --secondary: 12 6.5% 15.1%;
   --secondary-foreground: 0 0% 98%;
-  --muted: 240 3.7% 15.9%;
-  --muted-foreground: 240 5% 64.9%;
-  --accent: 240 3.7% 15.9%;
+  --muted: 12 6.5% 15.1%;
+  --muted-foreground: 24 5.4% 63.9%;
+  --accent: 12 6.5% 15.1%;
   --accent-foreground: 0 0% 98%;
   --destructive: 0 62.8% 30.6%;
   --destructive-foreground: 0 0% 98%;
-  --border: 240 3.7% 15.9%;
-  --input: 240 3.7% 15.9%;
+  --border: 12 6.5% 15.1%;
+  --input: 12 6.5% 15.1%;
   --ring: 349 100% 70%;
-  --chart-1: 220 70% 50%;
-  --chart-2: 160 60% 45%;
-  --chart-3: 30 80% 55%;
-  --chart-4: 280 65% 60%;
-  --chart-5: 340 75% 55%;
 }
 
 * {
@@ -68,60 +64,36 @@ body {
   font-family: 'Inter', sans-serif;
 }
 
-/* Glassmorphic effect */
-.glassmorphic {
-  background: rgba(255, 255, 255, 0.25);
-  backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.18);
-  border-radius: 16px;
-  box-shadow: 0 8px 32px rgba(255, 192, 203, 0.15);
+/* Enhanced love shapes animation for all pages */
+.page-background {
+  position: relative;
+  min-height: 100vh;
 }
 
-/* Love shapes animation */
-.love-shapes {
+.page-background::before {
+  content: '';
   position: fixed;
   top: 0;
   left: 0;
   width: 100%;
   height: 100%;
   pointer-events: none;
-  overflow: hidden;
-  z-index: 1;
+  z-index: 0;
+  background-image: 
+    radial-gradient(circle at 20% 20%, rgba(255, 105, 180, 0.05) 2px, transparent 2px),
+    radial-gradient(circle at 80% 40%, rgba(255, 182, 193, 0.05) 1px, transparent 1px),
+    radial-gradient(circle at 40% 80%, rgba(255, 105, 180, 0.05) 3px, transparent 3px),
+    radial-gradient(circle at 60% 60%, rgba(255, 182, 193, 0.05) 2px, transparent 2px);
+  background-size: 200px 200px, 150px 150px, 300px 300px, 250px 250px;
+  animation: drift 30s infinite linear;
 }
 
-.love-shapes::before,
-.love-shapes::after {
-  content: '';
-  position: absolute;
-  width: 8px;
-  height: 8px;
-  background: #ff69b4;
-  border-radius: 50%;
-  opacity: 0.15;
-  animation: float 15s infinite linear;
-}
-
-.love-shapes::before {
-  left: 20%;
-  animation-delay: 0s;
-  animation-duration: 20s;
-}
-
-.love-shapes::after {
-  left: 80%;
-  animation-delay: 5s;
-  animation-duration: 25s;
-}
-
-/* Create multiple love shapes with increased opacity */
-.love-shapes {
+.dark .page-background::before {
   background-image: 
     radial-gradient(circle at 20% 20%, rgba(255, 105, 180, 0.08) 2px, transparent 2px),
     radial-gradient(circle at 80% 40%, rgba(255, 182, 193, 0.08) 1px, transparent 1px),
     radial-gradient(circle at 40% 80%, rgba(255, 105, 180, 0.08) 3px, transparent 3px),
     radial-gradient(circle at 60% 60%, rgba(255, 182, 193, 0.08) 2px, transparent 2px);
-  background-size: 200px 200px, 150px 150px, 300px 300px, 250px 250px;
-  animation: drift 30s infinite linear;
 }
 
 @keyframes drift {
@@ -133,13 +105,12 @@ body {
   }
 }
 
-/* Touch interactive hearts */
-.love-shapes:hover {
-  animation-duration: 10s;
+/* Featured products carousel animation */
+.featured-scroll {
+  animation: scrollHorizontal 20s linear infinite;
 }
 
-/* Mobile testimonials scroll - faster animation */
-@keyframes scroll {
+@keyframes scrollHorizontal {
   0% {
     transform: translateX(0);
   }
@@ -148,44 +119,39 @@ body {
   }
 }
 
-.animate-scroll {
-  animation: scroll 8s linear infinite;
-}
-
-/* Custom scrollbar */
-::-webkit-scrollbar {
-  width: 6px;
-}
-
-::-webkit-scrollbar-track {
-  background: rgba(255, 255, 255, 0.1);
-}
-
-::-webkit-scrollbar-thumb {
-  background: rgba(255, 105, 180, 0.3);
-  border-radius: 3px;
-}
-
-::-webkit-scrollbar-thumb:hover {
-  background: rgba(255, 105, 180, 0.5);
-}
-
-/* Improved mobile responsiveness */
-@media (max-width: 768px) {
-  .glassmorphic {
-    border-radius: 12px;
-    backdrop-filter: blur(8px);
-    background: rgba(255, 255, 255, 0.2);
+/* Responsive design improvements */
+@media (max-width: 640px) {
+  .text-xs { font-size: 0.7rem; line-height: 1rem; }
+  .text-sm { font-size: 0.8rem; line-height: 1.1rem; }
+  .text-base { font-size: 0.85rem; line-height: 1.2rem; }
+  .text-lg { font-size: 1rem; line-height: 1.3rem; }
+  .text-xl { font-size: 1.1rem; line-height: 1.4rem; }
+  .text-2xl { font-size: 1.3rem; line-height: 1.5rem; }
+  .text-3xl { font-size: 1.6rem; line-height: 1.8rem; }
+  
+  .card-mobile {
+    padding: 0.75rem;
+    margin: 0.5rem;
   }
   
-  .love-shapes {
-    background-size: 100px 100px, 75px 75px, 150px 150px, 125px 125px;
+  .luxury-card {
+    padding: 1rem;
+    margin: 0.5rem 0;
   }
   
-  /* Mobile optimizations */
-  .animate-scroll {
-    animation: scroll 12s linear infinite;
+  .girly-container {
+    padding: 0.75rem;
   }
+}
+
+@media (min-width: 641px) and (max-width: 768px) {
+  .text-xs { font-size: 0.75rem; }
+  .text-sm { font-size: 0.85rem; }
+  .text-base { font-size: 0.9rem; }
+  .text-lg { font-size: 1.05rem; }
+  .text-xl { font-size: 1.2rem; }
+  .text-2xl { font-size: 1.4rem; }
+  .text-3xl { font-size: 1.7rem; }
 }
 
 /* Enhanced animations */
@@ -204,75 +170,31 @@ body {
   }
 }
 
-/* Button enhancements */
-.btn-primary {
-  background: linear-gradient(135deg, #ff69b4, #ff1493);
-  border: none;
-  color: white;
-  transition: all 0.3s ease;
-}
-
-.btn-primary:hover {
-  background: linear-gradient(135deg, #ff1493, #ff69b4);
-  transform: translateY(-2px);
-  box-shadow: 0 8px 25px rgba(255, 105, 180, 0.3);
-}
-
-.btn-secondary {
-  background: linear-gradient(135deg, #6b7280, #4b5563);
-  border: none;
-  color: white;
-  transition: all 0.3s ease;
-}
-
-.btn-secondary:hover {
-  background: linear-gradient(135deg, #4b5563, #6b7280);
-  transform: translateY(-2px);
-  box-shadow: 0 8px 25px rgba(107, 114, 128, 0.3);
-}
-
-/* Card improvements */
 .card-hover {
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .card-hover:hover {
-  transform: translateY(-8px) scale(1.02);
-  box-shadow: 0 20px 40px rgba(255, 105, 180, 0.15);
+  transform: translateY(-4px) scale(1.02);
+  box-shadow: 0 10px 25px rgba(255, 105, 180, 0.15);
 }
 
-/* Text overflow handling */
-.line-clamp-2 {
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
+/* Dark mode compatibility */
+.dark .luxury-card {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
-.line-clamp-3 {
-  display: -webkit-box;
-  -webkit-line-clamp: 3;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
+.dark .glassmorphic {
+  background: rgba(0, 0, 0, 0.25);
+  border: 1px solid rgba(255, 255, 255, 0.18);
 }
 
-/* Mobile app-like improvements */
-@media (max-width: 640px) {
-  /* Smaller text for mobile */
-  .text-xs { font-size: 0.7rem; }
-  .text-sm { font-size: 0.8rem; }
-  .text-base { font-size: 0.9rem; }
-  
-  /* Tighter spacing for mobile */
-  .space-y-1 > * + * { margin-top: 0.15rem; }
-  .space-y-2 > * + * { margin-top: 0.3rem; }
-  .space-y-3 > * + * { margin-top: 0.5rem; }
-  .space-y-4 > * + * { margin-top: 0.75rem; }
-  
-  /* Better button sizing for mobile */
-  .btn-mobile {
-    padding: 0.5rem 0.75rem;
-    font-size: 0.8rem;
-    min-height: 2.5rem;
-  }
+/* Custom scrollbar for dark mode */
+.dark::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.1);
+}
+
+.dark::-webkit-scrollbar-thumb {
+  background: rgba(255, 105, 180, 0.4);
 }

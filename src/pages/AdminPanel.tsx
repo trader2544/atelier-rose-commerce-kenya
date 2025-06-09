@@ -1,6 +1,7 @@
 
 import React, { useState, useEffect } from 'react';
-import { Menu, X } from 'lucide-react';
+import { Menu, X, Home } from 'lucide-react';
+import { Link } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { Button } from '@/components/ui/button';
 import AdminSidebar from '@/components/admin/AdminSidebar';
@@ -96,7 +97,27 @@ const AdminPanel = () => {
             <Menu className="h-5 w-5" />
           </Button>
           <h1 className="text-lg font-semibold text-pink-800">ELSO Admin</h1>
-          <div className="w-9" /> {/* Spacer for centering */}
+          <Link to="/">
+            <Button variant="ghost" size="sm" className="p-2">
+              <Home className="h-5 w-5" />
+            </Button>
+          </Link>
+        </div>
+
+        {/* Desktop Header */}
+        <div className="hidden lg:block bg-white border-b border-gray-200 p-4">
+          <div className="flex justify-between items-center">
+            <div>
+              <h1 className="text-xl font-semibold text-pink-800">ELSO Admin Panel</h1>
+              <p className="text-sm text-gray-600">Manage your boutique</p>
+            </div>
+            <Link to="/">
+              <Button variant="outline" className="border-pink-200 hover:bg-pink-50">
+                <Home className="h-4 w-4 mr-2" />
+                Back to Shop
+              </Button>
+            </Link>
+          </div>
         </div>
 
         {/* Content Area */}
